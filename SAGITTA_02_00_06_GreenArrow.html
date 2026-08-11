@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0E1614">
+<title>Sagitta — Carnet de performance & coaching au tir à l'arc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1614; --bg2:#0B1210; --panel:#16211E; --panel2:#1B2925; --line:#26332F; --line2:#334340;
+  --ink:#E9E4D6; --muted:#8A968F; --muted2:#647069;
+  --gold:#F2C14E; --gold-soft:#FFD34E;
+  --wa-gold:#F6D33C; --wa-red:#E23B2E; --wa-blue:#2FA4DE; --wa-black:#161616; --wa-white:#EFEBDD;
+  --good:#6FCF97; --warn:#F2C14E; --bad:#E8715B; --info:#5FB8D6;
+  --r:14px; --rs:10px;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --disp:'Archivo',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(242,193,78,.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47,164,222,.05), transparent 60%),
+    var(--bg);
+  color:var(--ink); font-family:var(--body); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; padding-bottom:84px;
+}
+h1,h2,h3,h4{font-family:var(--disp);margin:0;line-height:1.15;letter-spacing:-.01em}
+.mono{font-family:var(--mono)}
+button{font-family:var(--body);cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:var(--body);font-size:15px}
+.eyebrow{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--muted)}
+.hidden{display:none!important}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--bg2),rgba(11,18,16,.86));backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .mark{width:30px;height:30px;flex:0 0 auto}
+.brand .name{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:.02em}
+.brand .name b{color:var(--gold)}
+.brand .sub{font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-family:var(--disp);font-weight:600;margin-top:-2px}
+.topbar .spacer{flex:1}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;color:var(--muted)}
+.iconbtn:hover{color:var(--ink);border-color:var(--line2)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 40px}
+.view{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- nav (bottom on mobile) ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:45;background:linear-gradient(0deg,var(--bg2),rgba(11,18,16,.9));backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;color:var(--muted2);font-size:10.5px;font-weight:600;letter-spacing:.02em}
+.nav button svg{width:22px;height:22px}
+.nav button.active{color:var(--gold)}
+.nav button.active svg{filter:drop-shadow(0 0 6px rgba(242,193,78,.35))}
+
+/* ---------- panels & cards ---------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.panel + .panel{margin-top:14px}
+.grid{display:grid;gap:14px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.section-head h2{font-size:22px}
+.hint{color:var(--muted);font-size:13px}
+
+/* metric tiles */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.metric{background:var(--panel2);border:1px solid var(--line);border-radius:var(--rs);padding:14px}
+.metric .lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-family:var(--disp);font-weight:700}
+.metric .val{font-family:var(--mono);font-weight:600;font-size:26px;margin-top:6px;line-height:1;color:var(--ink)}
+.metric .val small{font-size:13px;color:var(--muted);font-weight:400}
+.metric .delta{font-size:11.5px;margin-top:6px;font-family:var(--mono)}
+.metric.accent{border-color:rgba(242,193,78,.4);background:linear-gradient(180deg,rgba(242,193,78,.08),var(--panel2))}
+.metric.accent .val{color:var(--gold)}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;font-weight:600;font-size:14px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn.primary{background:linear-gradient(180deg,var(--gold),#DDA82F);color:#20160a;border-color:transparent}
+.btn.primary:hover{filter:brightness(1.06);color:#20160a}
+.btn.ghost{background:transparent}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+
+/* forms */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.field input,.field select,.field textarea{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+
+/* list */
+.slist{display:flex;flex-direction:column;gap:10px}
+.scard{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:.15s;text-align:left;width:100%}
+.scard:hover{border-color:var(--line2);transform:translateX(2px)}
+.scard .day{flex:0 0 auto;width:52px;text-align:center}
+.scard .day .d{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--gold)}
+.scard .day .m{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em}
+.scard .meta{flex:1;min-width:0}
+.scard .meta .t{font-family:var(--disp);font-weight:700;font-size:15px}
+.scard .meta .s{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scard .sc{flex:0 0 auto;text-align:right}
+.scard .sc .big{font-family:var(--mono);font-weight:600;font-size:20px}
+.scard .sc .avg{font-size:11px;color:var(--muted)}
+.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted);letter-spacing:.02em}
+
+/* empty */
+.empty{text-align:center;padding:46px 20px;color:var(--muted)}
+.empty svg{width:56px;height:56px;opacity:.5;margin-bottom:14px}
+.empty h3{font-size:18px;color:var(--ink);margin-bottom:6px}
+
+/* target + scoring */
+.saisie-layout{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:820px){.saisie-layout{grid-template-columns:minmax(0,1fr) 340px}}
+.targetwrap{position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:1/1}
+.targetwrap svg{width:100%;height:100%;display:block;touch-action:none;border-radius:50%;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.targetzoom{position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:1/1;overflow:hidden;border-radius:50%;box-shadow:0 8px 30px rgba(0,0,0,.4);background:#0b0f0e;touch-action:none;cursor:grab}
+.targetzoom.panning{cursor:grabbing}
+.zoomlayer{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0}
+.zoomlayer svg{width:100%;height:100%;display:block}
+.zoomctrls{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.zoomctrls button{width:32px;height:32px;border-radius:9px;background:rgba(14,22,20,.78);backdrop-filter:blur(4px);border:1px solid var(--line2);color:var(--ink);font-family:var(--mono);font-weight:700;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
+.zoomctrls button:active{background:rgba(242,193,78,.3);color:var(--gold)}
+.zoomhint{position:absolute;left:8px;bottom:8px;font-size:10px;color:rgba(233,228,214,.65);background:rgba(14,22,20,.55);padding:3px 7px;border-radius:7px;pointer-events:none;font-family:var(--body);transition:opacity .2s}
+.hexcell{cursor:pointer;transition:opacity .1s,transform .1s;transform-box:fill-box;transform-origin:center}
+.hexcell:hover{opacity:.85}
+.hexcell:active{opacity:.65}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pad button{padding:14px 0;border-radius:11px;border:1px solid var(--line);background:var(--panel2);font-family:var(--mono);font-weight:600;font-size:17px;transition:.12s}
+.pad button:hover{border-color:var(--gold);color:var(--gold)}
+.pad button.miss{color:var(--muted)}
+.pad button.x{color:var(--wa-gold);border-color:rgba(246,211,60,.4)}
+.endstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.arrowchip{font-family:var(--mono);font-weight:600;font-size:14px;min-width:34px;height:34px;padding:0 8px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.arrowchip.filled{background:var(--panel2)}
+.volee-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.volee-row .n{font-family:var(--mono);color:var(--muted);width:26px;font-size:13px}
+.volee-row .arrows{flex:1;display:flex;gap:5px;flex-wrap:wrap}
+.volee-row .tot{font-family:var(--mono);font-weight:600;width:42px;text-align:right}
+.mini-arrow{font-family:var(--mono);font-size:12.5px;padding:2px 7px;border-radius:6px;background:var(--bg2);border:1px solid var(--line)}
+
+/* target legend */
+.tlegend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:12px;color:var(--muted)}
+.tlegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* charts */
+.chart{width:100%;overflow:visible}
+.bar-row{display:grid;grid-template-columns:34px 1fr 42px;align-items:center;gap:10px;margin:5px 0}
+.bar-row .zl{font-family:var(--mono);font-size:13px;text-align:right;font-weight:600}
+.bar-track{height:16px;background:var(--bg2);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px}
+.bar-row .zc{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+
+/* diagnostic */
+.diag{display:flex;flex-direction:column;gap:12px}
+.diag-item{display:flex;gap:12px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2)}
+.diag-item .ic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+.diag-item.force .ic{background:rgba(111,207,151,.15);color:var(--good)}
+.diag-item.faible .ic{background:rgba(232,113,91,.15);color:var(--bad)}
+.diag-item.axe .ic{background:rgba(242,193,78,.15);color:var(--gold)}
+.diag-item .tx h4{font-size:14px;margin-bottom:3px}
+.diag-item .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+.diag-item .tx b{color:var(--ink);font-weight:600}
+
+/* pill selectors */
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:8px 13px;border-radius:99px;border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--muted);background:var(--panel2)}
+.pill.on{border-color:var(--gold);color:var(--gold);background:rgba(242,193,78,.08)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(5,9,8,.72);backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;padding:18px}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:18px;max-width:460px;width:100%;padding:22px;max-height:88vh;overflow:auto}
+.modal h3{font-size:19px;margin-bottom:14px}
+
+/* banner */
+.banner{background:linear-gradient(90deg,rgba(232,113,91,.14),transparent);border:1px solid rgba(232,113,91,.3);border-radius:12px;padding:11px 14px;font-size:13px;color:#f0b6a8;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+.banner svg{flex:0 0 auto;margin-top:1px}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--gold);color:var(--ink);padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+
+.subnote{font-size:12px;color:var(--muted2);margin-top:8px;line-height:1.5}
+.divider{height:1px;background:var(--line);margin:18px 0}
+a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,193,78,.3)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="18" stroke="#26332F" stroke-width="2"/>
+      <circle cx="20" cy="20" r="12" stroke="#2FA4DE" stroke-width="2"/>
+      <circle cx="20" cy="20" r="6" fill="#F2C14E"/>
+      <path d="M6 34 L34 6 M28 6 L34 6 L34 12" stroke="#E9E4D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <div class="name">Sagit<b>ta</b></div>
+      <div class="sub">Performance · Coaching</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" id="btnData" title="Données & sauvegarde">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+  </button>
+  <button class="iconbtn" id="btnSettings" title="Profil">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+  <div id="preview-banner" class="banner hidden">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>
+    <div>Sauvegarde locale indisponible dans cet aperçu. Ouvre ou héberge le fichier (GitHub Pages) pour conserver tes séances. Tu peux aussi exporter tes données en JSON à tout moment.</div>
+  </div>
+
+  <div id="view-seances" class="view"></div>
+  <div id="view-saisie" class="view hidden"></div>
+  <div id="view-analyse" class="view hidden"></div>
+  <div id="view-progression" class="view hidden"></div>
+  <div id="view-coaching" class="view hidden"></div>
+  <div id="view-materiel" class="view hidden"></div>
+</div>
+
+<nav class="nav">
+  <button data-nav="seances" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Séances</button>
+  <button data-nav="saisie">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>Saisie</button>
+  <button data-nav="analyse">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Analyse</button>
+  <button data-nav="progression">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Progrès</button>
+  <button data-nav="coaching">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 5.4 5.6.5-4.2 3.8 1.3 5.6L12 20l-5.1 2.9 1.3-5.6L4 13.5l5.6-.5L12 2z"/></svg>Coaching</button>
+  <button data-nav="materiel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 20.5L20.5 6.5M20.5 6.5l-3-1M20.5 6.5l1 3M13 8L4 17l1.5 1.5L15 9.5"/><circle cx="17.5" cy="3.5" r="1.5"/></svg>Archerie</button>
+</nav>
+
+<div id="toast" class="toast"></div>
+<div id="modal-root"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   SAGITTA — v2.0.6 « GreenArrow »
+   Carnet de performance & coaching au tir à l'arc
+   Fichier unique HTML/JS · persistance localStorage · export JSON/CSV
+
+   Convention de version : X.Y.Z + CodeName
+   - X = version majeure — changement demandé/validé avec l'utilisateur avant incrément
+   - Y = fonctionnalités ajoutées/modifiées/corrigées/supprimées — incrément peu fréquent ;
+         repart à 0 (X+1) quand Y dépasserait 10
+   - Z = patchs, modifications marginales, ajouts connexes à l'existant — incrément le plus
+         fréquent ; roule vers Y+1 quand Z dépasserait 12
+   - CodeName = mémo de période de développement, ne change qu'avec X
+   ============================================================ */
+const VERSION = "2.0.6";
+const CODENAME = "GreenArrow";
+const LSKEY = "sagitta.v1";
+
+/* ---------- persistance sûre (dégrade en mémoire si indisponible) ---------- */
+let STORAGE_OK = true;
+try { const k="__sg_t"; localStorage.setItem(k,"1"); localStorage.removeItem(k); }
+catch(e){ STORAGE_OK = false; }
+let MEM = null;
+function loadState(){
+  if(!STORAGE_OK) return MEM;
+  try{ const r = localStorage.getItem(LSKEY); return r?JSON.parse(r):null; }catch(e){ return null; }
+}
+function saveState(){
+  if(!STORAGE_OK){ MEM = S; return; }
+  try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }catch(e){ STORAGE_OK=false; MEM=S; document.getElementById('preview-banner').classList.remove('hidden'); }
+}
+
+/* ---------- état ---------- */
+const DISCIPLINES = ["Salle 18 m","Extérieur (TAE)","Fédéral","Campagne","3D","Beursault","Entraînement libre"];
+const ARCS = ["Arc classique","Arc à poulies","Arc nu (barebow)","Arc droit / longbow"];
+function defaultState(){
+  return {
+    version:VERSION,
+    profile:{ nom:"Archer", arc:"Arc classique", main:"Droitier" },
+    objectif:{ moyenneCible:null, note:"" },
+    seances:[],
+    materiel:{ arcs:[], fleches:[], viseurs:[] },
+    ui:{ view:"seances", activeSeanceId:null, analyseId:null, materielTab:"arcs", viseurDetailId:null }
+  };
+}
+let S = loadState() || defaultState();
+if(!S.ui) S.ui = {view:"seances",activeSeanceId:null,analyseId:null};
+if(!S.ui.materielTab) S.ui.materielTab="arcs";
+if(!S.materiel) S.materiel={arcs:[],fleches:[],viseurs:[]};
+if(!STORAGE_OK) document.getElementById('preview-banner').classList.remove('hidden');
+
+/* ---------- utilitaires ---------- */
+const $ = s=>document.querySelector(s);
+const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const MOIS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+function fmtDate(iso){ const d=new Date(iso); return d.getDate()+" "+MOIS[d.getMonth()]+" "+d.getFullYear(); }
+function dayOf(iso){ const d=new Date(iso); return {d:d.getDate(), m:MOIS[d.getMonth()].replace('.','')}; }
+function round(n,p=1){ if(n==null||isNaN(n)) return "—"; const f=Math.pow(10,p); return Math.round(n*f)/f; }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1900); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function arcLabel(se){
+  if(se.arcId){ const a=S.materiel.arcs.find(x=>x.id===se.arcId); if(a) return `${a.nom} (${a.type})`; }
+  return se.arcType||"";
+}
+function flecheLabel(se){
+  if(se.flecheId){ const fl=S.materiel.fleches.find(x=>x.id===se.flecheId); if(fl) return fl.nom; }
+  return "";
+}
+
+/* ---------- moteur de scoring / géométrie du blason ---------- */
+// scoring: "10z" (10..1) ou "6z" (10..5). Rayons en cm, PIM et coords en cm.
+function faceModel(blasonCm, scoring){
+  const R = blasonCm/2;
+  const zones = scoring==="6z"?6:10;
+  return { R, zones, ringW:R/zones, xRadius:R/(zones*2) };
+}
+function scoreFromRadius(rCm, blasonCm, scoring){
+  const f = faceModel(blasonCm,scoring);
+  if(rCm>f.R) return {v:0,isX:false};
+  let k = Math.floor(rCm/f.ringW);      // 0..zones-1
+  if(k>=f.zones) k=f.zones-1;
+  let v = 10-k;                          // 10z -> 10..1 ; 6z -> 10..5
+  const isX = rCm<=f.xRadius;
+  return {v, isX};
+}
+// couleur World Archery d'une zone (score v)
+function zoneColor(v){
+  if(v>=9) return "var(--wa-gold)";
+  if(v>=7) return "var(--wa-red)";
+  if(v>=5) return "var(--wa-blue)";
+  if(v>=3) return "var(--wa-black)";
+  if(v>=1) return "var(--wa-white)";
+  return "#4a5a55";
+}
+function zoneHex(v){
+  if(v>=9) return "#F6D33C"; if(v>=7) return "#E23B2E"; if(v>=5) return "#2FA4DE";
+  if(v>=3) return "#161616"; if(v>=1) return "#EFEBDD"; return "#4a5a55";
+}
+
+/* ---------- statistiques d'une séance ---------- */
+function flatArrows(se){ const a=[]; se.volees.forEach(v=>v.fleches.forEach(f=>a.push(f))); return a; }
+function endTotals(se){ return se.volees.map(v=>v.fleches.reduce((s,f)=>s+(f.v||0),0)); }
+function seanceStats(se){
+  const arrows = flatArrows(se);
+  const n = arrows.length;
+  const total = arrows.reduce((s,f)=>s+(f.v||0),0);
+  const avg = n? total/n : 0;
+  const tens = arrows.filter(f=>f.v===10).length;
+  const xs = arrows.filter(f=>f.isX).length;
+  const nines = arrows.filter(f=>f.v>=9).length;
+  const miss = arrows.filter(f=>f.v===0).length;
+  const ets = endTotals(se);
+  // répartition par zone
+  const dist = {}; for(let v=0;v<=10;v++) dist[v]=0;
+  arrows.forEach(f=>dist[f.v]=(dist[f.v]||0)+1);
+  // --- dispersion (nécessite coordonnées) ---
+  const plotted = arrows.filter(f=>f.x!=null && f.y!=null);
+  let disp=null;
+  if(plotted.length>=3){
+    const mx = plotted.reduce((s,f)=>s+f.x,0)/plotted.length;
+    const my = plotted.reduce((s,f)=>s+f.y,0)/plotted.length;
+    const sdx = Math.sqrt(plotted.reduce((s,f)=>s+(f.x-mx)**2,0)/plotted.length);
+    const sdy = Math.sqrt(plotted.reduce((s,f)=>s+(f.y-my)**2,0)/plotted.length);
+    // rayon moyen autour du centre de groupe (précision pure)
+    const rmean = plotted.reduce((s,f)=>s+Math.hypot(f.x-mx,f.y-my),0)/plotted.length;
+    const sdr = Math.sqrt(sdx*sdx+sdy*sdy); // rayon du cercle de dispersion (~68%)
+    // hull = étalement extrême (max distance entre 2 impacts)
+    let spread=0;
+    for(let i=0;i<plotted.length;i++)for(let j=i+1;j<plotted.length;j++){const dd=Math.hypot(plotted[i].x-plotted[j].x,plotted[i].y-plotted[j].y);if(dd>spread)spread=dd;}
+    const dCenter = Math.hypot(mx,my); // distance PIM->centre (justesse)
+    // score potentiel : groupe recentré (PIM au centre), même dispersion
+    let potential=0;
+    plotted.forEach(f=>{ const r=Math.hypot(f.x-mx,f.y-my); potential += scoreFromRadius(r,se.blasonCm,se.scoring).v; });
+    const actualPlotted = plotted.reduce((s,f)=>s+f.v,0);
+    // --- déviation angulaire (mrad) et rating estimé, façon système de handicap (UK Archery / David Lane) ---
+    // Principe : l'écart-type du groupement, normalisé par la distance de tir, donne une mesure
+    // comparable d'une séance à l'autre même si la distance change (18 m salle vs 70 m extérieur).
+    let angMrad=null, ratingH=null;
+    if(se.distance>0){
+      const angRad = (sdr/100) / se.distance; // approximation petit angle
+      angMrad = angRad*1000;
+      const angDeg = angRad*180/Math.PI;
+      if(angDeg>0) ratingH = Math.log(angDeg/0.045)/Math.log(1.036); // ancrage: handicap 0 ≈ 0.045°
+    }
+    disp = { n:plotted.length, mx,my,sdx,sdy,rmean,sdr,spread,dCenter, potential, actualPlotted,
+             gain: potential-actualPlotted, angMrad, ratingH };
+  }
+  return { n,total,avg,tens,xs,nines,miss, dist, ets, disp,
+           tenRate:n?tens/n*100:0, xRate:n?xs/n*100:0, goldRate:n?nines/n*100:0 };
+}
+
+/* ---------- diagnostic / synthèse coaching ---------- */
+function diagnose(se){
+  const st = seanceStats(se);
+  const forces=[], faibles=[], axes=[];
+  const f = faceModel(se.blasonCm, se.scoring);
+
+  // dispersion / groupement / centrage (si tracé)
+  if(st.disp){
+    const d = st.disp;
+    const groupRel = d.rmean / f.ringW; // rayon moyen exprimé en "largeur de zone"
+    if(groupRel < 0.9) forces.push(["Groupement serré", `Rayon moyen de <b>${round(d.rmean)} cm</b> autour du centre de groupe (≈ ${round(groupRel,1)} largeur de zone). Belle précision.`]);
+    else if(groupRel > 1.6) faibles.push(["Groupement large", `Rayon moyen de <b>${round(d.rmean)} cm</b>. La dispersion coûte des points indépendamment de la visée : priorité au travail de constance du geste.`]);
+
+    if(d.angMrad!=null){
+      axes.push(["Groupement normalisé par la distance", `Ton groupement correspond à une déviation angulaire d'environ <b>${round(d.angMrad,1)} mrad</b> (rating estimé ≈ <b>${round(d.ratingH,0)}</b>, méthode de handicap type UK Archery — 0 = quasi parfait ≈0,8 mrad, 100 = niveau débutant ≈27 mrad). Cette valeur est comparable d'une distance à l'autre, contrairement au score brut.`]);
+    }
+
+    // centrage
+    const off = d.dCenter;
+    const dirH = d.mx>0?"à droite":"à gauche";
+    const dirV = d.my>0?"vers le haut":"vers le bas";
+    if(off > f.ringW*0.55){
+      const parts=[];
+      if(Math.abs(d.mx)>f.ringW*0.35) parts.push(`décalé ${dirH} de ${round(Math.abs(d.mx))} cm`);
+      if(Math.abs(d.my)>f.ringW*0.35) parts.push(`${dirV} de ${round(Math.abs(d.my))} cm`);
+      faibles.push(["Centrage : biais systématique", `Ton point d'impact moyen est ${parts.join(", ")}. Un décalage horizontal oriente vers un réglage de dérive/alignement ; un décalage vertical vers la hausse du viseur, l'ancrage ou le timing de décoche.`]);
+      if(d.gain>0) axes.push(["Score potentiel disponible", `À dispersion identique, un groupe parfaitement centré te ferait gagner <b>+${d.gain} pts</b> sur cette séance. Le gain principal est ici dans le RÉGLAGE/la VISÉE, pas dans le geste.`]);
+    } else {
+      forces.push(["Centrage propre", `Point d'impact moyen à <b>${round(off)} cm</b> du centre : ta visée/ton réglage sont justes. Le potentiel de progrès est surtout dans le resserrement du groupe.`]);
+    }
+  } else {
+    axes.push(["Active l'analyse de dispersion", `Sur tes prochaines volées, place les impacts sur la cible (onglet Saisie, mode « Pointer »). Sagitta calculera alors groupement, centrage (PIM), score potentiel et déviation angulaire (mrad) — les indicateurs qu'utilisent les systèmes de classement des archers.`]);
+  }
+
+  // fatigue / tendance intra-séance
+  if(st.ets.length>=6){
+    const third = Math.max(1,Math.floor(st.ets.length/3));
+    const first = st.ets.slice(0,third), last = st.ets.slice(-third);
+    const avgF = first.reduce((a,b)=>a+b,0)/first.length;
+    const avgL = last.reduce((a,b)=>a+b,0)/last.length;
+    const dropPct = avgF? (avgL-avgF)/avgF*100 : 0;
+    if(dropPct < -6) faibles.push(["Baisse en fin de séance", `Tes dernières volées perdent <b>${round(Math.abs(dropPct))} %</b> vs le début. Piste : endurance de tir / concentration. Fractionne, ou réduis le volume utile en gardant la qualité.`]);
+    else if(dropPct > 6) axes.push(["Effet d'échauffement", `Tu montes en puissance (+${round(dropPct)} % en fin de séance). Un échauffement à blanc plus long pourrait rendre tes premières volées aussi productives.`]);
+    else forces.push(["Séance homogène", `Aucune dérive marquée entre début et fin : bonne gestion de l'effort et de la concentration.`]);
+  }
+
+  // taux de 10
+  if(st.tenRate>=40) forces.push(["Fort taux de 10", `<b>${round(st.tenRate)} %</b> de tes flèches sont des 10 (dont ${st.xs} X). Tu convertis quand tu es bien placé.`]);
+  if(st.miss>0) faibles.push(["Flèches hors cible", `${st.miss} flèche(s) hors blason. À isoler : geste ponctuel, décoche accrochée, ou perte de concentration — elles pèsent lourd sur la moyenne.`]);
+
+  return {st, forces, faibles, axes};
+}
+
+/* ============================================================
+   RENDU DES VUES
+   ============================================================ */
+function setView(v){
+  S.ui.view=v; saveState();
+  ["seances","saisie","analyse","progression","coaching","materiel"].forEach(k=>{
+    $("#view-"+k).classList.toggle("hidden",k!==v);
+  });
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===v));
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function render(){
+  const v=S.ui.view;
+  if(v==="seances") renderSeances();
+  else if(v==="saisie") renderSaisie();
+  else if(v==="analyse") renderAnalyse();
+  else if(v==="progression") renderProgression();
+  else if(v==="coaching") renderCoaching();
+  else if(v==="materiel") renderMateriel();
+}
+
+/* ---------- VUE SÉANCES ---------- */
+function renderSeances(){
+  const el=$("#view-seances");
+  const seances=[...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  let list;
+  if(!seances.length){
+    list=`<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+      <h3>Aucune séance pour l'instant</h3>
+      <p>Crée ta première séance pour commencer à mesurer ta performance — ou charge une séance de démonstration pour voir les indicateurs en action.</p>
+      <div class="btnrow" style="justify-content:center;margin-top:16px">
+        <button class="btn primary" onclick="newSeance()">Nouvelle séance</button>
+        <button class="btn ghost" onclick="loadDemo()">Séance de démonstration</button>
+      </div>
+    </div>`;
+  } else {
+    list=`<div class="slist">`+seances.map(se=>{
+      const st=seanceStats(se); const dd=dayOf(se.date);
+      const done=flatArrows(se).length;
+      return `<button class="scard" onclick="openAnalyse('${se.id}')">
+        <div class="day"><div class="d">${dd.d}</div><div class="m">${dd.m}</div></div>
+        <div class="meta">
+          <div class="t">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div>
+          <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${done} flèches ${st.disp?"· 🎯 tracé":""}</div>
+        </div>
+        <div class="sc"><div class="big">${st.total}</div><div class="avg">${round(st.avg,2)}/flèche</div></div>
+      </button>`;
+    }).join("")+`</div>`;
+  }
+  el.innerHTML=`
+    <div class="section-head">
+      <div><div class="eyebrow">Carnet</div><h2>Mes séances</h2></div>
+      <div class="btnrow">
+        ${seances.length?'<button class="btn ghost sm" onclick="loadDemo()">+ Démo</button>':''}
+        <button class="btn primary" onclick="newSeance()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nouvelle séance</button>
+      </div>
+    </div>
+    ${seances.length?renderSummaryStrip():""}
+    ${list}`;
+}
+function renderSummaryStrip(){
+  const all=S.seances; if(!all.length) return "";
+  const totArrows=all.reduce((s,se)=>s+flatArrows(se).length,0);
+  const avgs=all.map(se=>seanceStats(se).avg).filter(x=>x>0);
+  const bestAvg=avgs.length?Math.max(...avgs):0;
+  const globalAvg=avgs.length?avgs.reduce((a,b)=>a+b,0)/avgs.length:0;
+  return `<div class="metrics" style="margin-bottom:18px">
+    <div class="metric"><div class="lab">Séances</div><div class="val">${all.length}</div></div>
+    <div class="metric"><div class="lab">Flèches tirées</div><div class="val">${totArrows}</div></div>
+    <div class="metric"><div class="lab">Moyenne globale</div><div class="val">${round(globalAvg,2)}<small>/fl</small></div></div>
+    <div class="metric accent"><div class="lab">Meilleure moyenne</div><div class="val">${round(bestAvg,2)}<small>/fl</small></div></div>
+  </div>`;
+}
+
+/* ---------- CRÉATION DE SÉANCE ---------- */
+function newSeance(){
+  const today=new Date().toISOString().slice(0,10);
+  modal(`
+    <h3>Nouvelle séance</h3>
+    <div class="grid" style="gap:14px">
+      <div class="field"><label>Date</label><input type="date" id="ns-date" value="${today}"></div>
+      <div class="formgrid">
+        <div class="field"><label>Discipline</label><select id="ns-disc">${DISCIPLINES.map(d=>`<option ${d===S.profile._lastDisc?'selected':''}>${d}</option>`).join("")}</select></div>
+        <div class="field"><label>Distance (m)</label><input type="number" id="ns-dist" value="18" min="0" step="1"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field">
+          <label>Arc utilisé</label>
+          ${S.materiel.arcs.length? `<select id="ns-arc">${S.materiel.arcs.map(a=>`<option value="${a.id}" ${a.id===S.profile._lastArcId?'selected':''}>${esc(a.nom)} (${esc(a.type)})</option>`).join("")}</select>
+            <div class="subnote" style="margin-top:4px">Gérer tes arcs dans l'onglet Archerie.</div>`
+            : `<select id="ns-arc">${ARCS.map(a=>`<option ${a===S.profile.arc?'selected':''}>${a}</option>`).join("")}</select>
+            <div class="subnote" style="margin-top:4px">Aucun arc enregistré — ajoute-en un dans l'onglet Archerie pour le retrouver ici.</div>`}
+        </div>
+        <div class="field"><label>Blason Ø (cm)</label><input type="number" id="ns-blason" value="40" min="10" step="1"></div>
+      </div>
+      ${S.materiel.fleches.length?`<div class="field">
+          <label>Jeu de flèches utilisé</label>
+          <select id="ns-fleche">
+            <option value="">— non précisé —</option>
+            ${S.materiel.fleches.map(fl=>`<option value="${fl.id}" ${fl.id===S.profile._lastFlecheId?'selected':''}>${esc(fl.nom)}</option>`).join("")}
+          </select>
+        </div>`:''}
+      <div class="formgrid">
+        <div class="field"><label>Cotation</label><select id="ns-scoring"><option value="10z">10 zones (10→1)</option><option value="6z">6 zones poulies (10→5)</option></select></div>
+        <div class="field"><label>Flèches / volée</label><input type="number" id="ns-fpv" value="6" min="1" max="12" step="1"></div>
+        <div class="field"><label>Nb de volées prévues</label><input type="number" id="ns-nv" value="10" min="1" max="60" step="1"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Objectif / note de séance (optionnel)</label><input id="ns-note" placeholder="Ex. tenir le rythme, travailler la décoche…"></div>
+        <div class="field"><label>Temps de maintien post-clicker (s, optionnel)</label><input type="number" id="ns-clicker" step="0.1" min="0" placeholder="Ex. 1.2"></div>
+      </div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn primary" onclick="createSeance()">Créer & saisir</button>
+    </div>`);
+}
+function createSeance(){
+  const disc=$("#ns-disc").value;
+  const arcVal=$("#ns-arc").value;
+  const savedArc = S.materiel.arcs.find(a=>a.id===arcVal);
+  const flecheEl=$("#ns-fleche");
+  const flecheId = flecheEl && flecheEl.value ? flecheEl.value : null;
+  const se={
+    id:uid(),
+    date:$("#ns-date").value||new Date().toISOString().slice(0,10),
+    discipline:disc,
+    distance:parseInt($("#ns-dist").value)||0,
+    arcId: savedArc? savedArc.id : null,
+    arcType: savedArc? savedArc.type : arcVal,
+    flecheId,
+    blasonCm:parseInt($("#ns-blason").value)||40,
+    scoring:$("#ns-scoring").value,
+    flechesParVolee:Math.max(1,parseInt($("#ns-fpv").value)||6),
+    nbVolees:Math.max(1,parseInt($("#ns-nv").value)||10),
+    note:$("#ns-note").value.trim(),
+    clickerTime: $("#ns-clicker").value ? parseFloat($("#ns-clicker").value) : null,
+    volees:[]
+  };
+  S.profile._lastDisc=disc; S.profile.arc=se.arcType; if(savedArc) S.profile._lastArcId=savedArc.id; if(flecheId) S.profile._lastFlecheId=flecheId;
+  S.seances.push(se); S.ui.activeSeanceId=se.id; S.ui.inputMode="pointer"; resetZoomState();
+  saveState(); closeModal(); setView("saisie");
+}
+
+/* ---------- VUE SAISIE ---------- */
+let CURRENT_END=[]; // flèches de la volée en cours
+function renderSaisie(){
+  const el=$("#view-saisie");
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId);
+  if(!se){
+    el.innerHTML=`<div class="empty"><h3>Aucune séance active</h3><p>Crée ou ouvre une séance pour saisir tes volées.</p><button class="btn primary" style="margin-top:12px" onclick="newSeance()">Nouvelle séance</button></div>`;
+    return;
+  }
+  if(S.ui.inputMode==null) S.ui.inputMode="pointer";
+  const mode=S.ui.inputMode;
+  const st=seanceStats(se);
+  const fpv=se.flechesParVolee;
+  const done=se.volees.length;
+
+  el.innerHTML=`
+    <div class="section-head">
+      <div><div class="eyebrow">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div><h2>Saisie · volée ${done+1}/${se.nbVolees}</h2></div>
+      <button class="btn ghost sm" onclick="openAnalyse('${se.id}')">Voir l'analyse →</button>
+    </div>
+
+    <div class="panel" style="padding:14px;margin-bottom:14px">
+      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <div class="pills">
+          <button class="pill ${mode==='pointer'?'on':''}" onclick="setMode('pointer')">🎯 Pointer sur cible</button>
+          <button class="pill ${mode==='pad'?'on':''}" onclick="setMode('pad')">⌨︎ Saisie rapide</button>
+        </div>
+        <div class="mono" style="color:var(--muted);font-size:13px">Total séance : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl</div>
+      </div>
+    </div>
+
+    <div class="saisie-layout">
+      <div class="panel">
+        ${mode==='pointer'?targetSVG(se):padHTML(se)}
+        <div style="margin-top:14px">
+          <div class="eyebrow" style="margin-bottom:8px">Volée en cours — ${CURRENT_END.length}/${fpv}</div>
+          <div class="endstrip" id="endstrip">${endStripHTML(fpv)}</div>
+          <div class="btnrow" style="margin-top:14px">
+            <button class="btn sm" onclick="undoArrow()" ${!CURRENT_END.length?'disabled style="opacity:.4"':''}>↶ Annuler flèche</button>
+            <button class="btn primary sm" onclick="validateEnd()" ${CURRENT_END.length!==fpv?'disabled style="opacity:.45"':''}>Valider la volée</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow" style="margin-bottom:10px">Volées enregistrées</div>
+        ${done? se.volees.map((v,i)=>voleeRowHTML(v,i)).join("") : '<div class="hint">Aucune volée validée. Saisis tes flèches puis « Valider la volée ».</div>'}
+        ${done?`<div class="divider"></div>
+          <div style="display:flex;justify-content:space-between" class="mono">
+            <span style="color:var(--muted)">Moyenne / volée</span><b>${round(st.total/(se.volees.length||1),1)}</b></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px" class="mono">
+            <span style="color:var(--muted)">Taux de X</span><b>${round(st.xRate)} %</b></div>`:''}
+        <div class="btnrow" style="margin-top:16px">
+          <button class="btn sm danger" onclick="finishSeance()">Terminer la séance</button>
+        </div>
+      </div>
+    </div>
+    <div class="subnote">Astuce : en mode « Pointer », place chaque impact à sa vraie position sur le blason. Sagitta déduit le score automatiquement et débloque l'analyse de groupement, de centrage (PIM) et de score potentiel.</div>
+  `;
+  attachTargetHandlers(se);
+  setupZoomPan();
+}
+function setMode(m){ S.ui.inputMode=m; saveState(); renderSaisie(); }
+function endStripHTML(fpv){
+  let h="";
+  for(let i=0;i<fpv;i++){
+    const f=CURRENT_END[i];
+    if(f){ const lbl=f.isX?"X":(f.v===0?"M":f.v);
+      h+=`<span class="arrowchip filled" style="color:${zoneColor(f.v)};border-color:${zoneColor(f.v)}">${lbl}</span>`;
+    } else h+=`<span class="arrowchip">·</span>`;
+  }
+  return h;
+}
+function voleeRowHTML(v,i){
+  const tot=v.fleches.reduce((s,f)=>s+(f.v||0),0);
+  const chips=v.fleches.map(f=>{const l=f.isX?"X":(f.v===0?"M":f.v);return `<span class="mini-arrow" style="color:${zoneColor(f.v)}">${l}</span>`;}).join("");
+  return `<div class="volee-row"><span class="n">${i+1}</span><div class="arrows">${chips}</div><span class="tot">${tot}</span></div>`;
+}
+function padHTML(se){
+  const btns=[];
+  btns.push(`<button class="x" onclick="addArrowScore('X')">X</button>`);
+  const maxV=se.scoring==="6z"?10:10, minV=se.scoring==="6z"?5:1;
+  for(let v=10;v>=minV;v--) btns.push(`<button onclick="addArrowScore(${v})" style="color:${zoneColor(v)}">${v}</button>`);
+  btns.push(`<button class="miss" onclick="addArrowScore('M')">M</button>`);
+  return `<div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Saisie rapide — appuie sur le score de chaque flèche</div><div class="pad">${btns.join("")}</div>`;
+}
+/* ---------- mosaïque hexagonale (facilite le pointage tactile) ---------- */
+function hexPoints(cx,cy,s){
+  const pts=[];
+  for(let i=0;i<6;i++){
+    const a=Math.PI/180*(60*i-30); // pointy-top
+    pts.push(round(cx+s*Math.cos(a),3)+","+round(cy+s*Math.sin(a),3));
+  }
+  return pts.join(" ");
+}
+function buildHexCells(R,s){
+  const cells=[];
+  const hSpacing=Math.sqrt(3)*s, vSpacing=1.5*s;
+  const rows=Math.ceil((R+s)/vSpacing)+1, cols=Math.ceil((R+s)/hSpacing)+1;
+  for(let row=-rows; row<=rows; row++){
+    const cy=row*vSpacing;
+    const offset=(Math.abs(row%2)===1)? hSpacing/2 : 0;
+    for(let col=-cols; col<=cols; col++){
+      const cx=col*hSpacing+offset;
+      if(Math.hypot(cx,cy) <= R+s*0.92) cells.push({cx,cy});
+    }
+  }
+  return cells;
+}
+function hexFaceSVG(se,R){
+  const f=faceModel(se.blasonCm,se.scoring);
+  const s=f.ringW/(2*Math.sqrt(3));   // 2 rangées d'alvéoles par zone de score (chaque zone garde ses 2 rangées, même quand 2 zones partagent une couleur — ex. bleu = zones 5 et 6)
+  const strawR=R+f.ringW;             // double rangée d'alvéoles "paille" au-delà du blason (même épaisseur qu'une zone)
+  const straw="#D9C48F";
+  const cells=buildHexCells(strawR,s);
+  const polys=cells.map(c=>{
+    const d=Math.hypot(c.cx,c.cy);
+    const fill = d<=R ? zoneHex(scoreFromRadius(d,se.blasonCm,se.scoring).v) : straw;
+    return `<polygon class="hexcell" points="${hexPoints(c.cx,c.cy,s)}" fill="${fill}" stroke="#0000002e" stroke-width="${R*0.002}" onclick="hexClickAdd(${round(c.cx,3)},${round(c.cy,3)})"/>`;
+  }).join("");
+  return { svg:`<clipPath id="hexClip"><circle cx="0" cy="0" r="${strawR}"/></clipPath><g clip-path="url(#hexClip)">${polys}</g>`, strawR };
+}
+function toggleHexGrid(v){ S.ui.hexGrid=v; saveState(); renderSaisie(); }
+function hexClickAdd(cx,cy){
+  if(consumeSuppressClick()) return;
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId); if(!se) return;
+  const x=cx, y=-cy; // conversion vers le repère interne (y positif vers le haut)
+  const r=Math.hypot(x,y);
+  const sc=scoreFromRadius(r,se.blasonCm,se.scoring);
+  addArrow({v:sc.v,isX:sc.isX,x:round(x,2),y:round(y,2)});
+}
+
+/* ============================================================
+   ZOOM / PAN de la cible en saisie — pince, molette, double-tap, boutons.
+   La conversion écran→score (getScreenCTM en visée libre, coordonnées figées
+   par alvéole en mosaïque) reste exacte à n'importe quel niveau de zoom.
+   ============================================================ */
+let ZOOM={scale:1,tx:0,ty:0,min:1,max:4};
+let ZPOINTERS=new Map(), ZDRAG=null, ZPINCH=null, SUPPRESS_CLICK=false;
+function resetZoomState(){ ZOOM.scale=1; ZOOM.tx=0; ZOOM.ty=0; }
+function consumeSuppressClick(){ if(SUPPRESS_CLICK){ SUPPRESS_CLICK=false; return true; } return false; }
+function applyZoomTransform(){
+  const wrap=$("#targetWrap"); if(!wrap) return;
+  wrap.style.transform=`translate(${ZOOM.tx}px,${ZOOM.ty}px) scale(${ZOOM.scale})`;
+  const hint=$("#zoomHint"); if(hint) hint.style.opacity = ZOOM.scale>1.02 ? '0':'1';
+}
+function clampPan(){
+  const zc=$("#targetZoom"); if(!zc) return;
+  const rect=zc.getBoundingClientRect();
+  ZOOM.tx=Math.max(rect.width*(1-ZOOM.scale), Math.min(0,ZOOM.tx));
+  ZOOM.ty=Math.max(rect.height*(1-ZOOM.scale), Math.min(0,ZOOM.ty));
+}
+function zoomAt(clientX,clientY,newScale){
+  const zc=$("#targetZoom"); if(!zc) return;
+  const rect=zc.getBoundingClientRect();
+  newScale=Math.max(ZOOM.min,Math.min(ZOOM.max,newScale));
+  const localX=(clientX-rect.left-ZOOM.tx)/ZOOM.scale, localY=(clientY-rect.top-ZOOM.ty)/ZOOM.scale;
+  ZOOM.tx=(clientX-rect.left)-newScale*localX; ZOOM.ty=(clientY-rect.top)-newScale*localY;
+  ZOOM.scale=newScale;
+  clampPan(); applyZoomTransform();
+}
+function zoomStep(factor){
+  const zc=$("#targetZoom"); if(!zc) return;
+  const rect=zc.getBoundingClientRect();
+  zoomAt(rect.left+rect.width/2, rect.top+rect.height/2, ZOOM.scale*factor);
+}
+function zoomReset(){ resetZoomState(); applyZoomTransform(); }
+function setupZoomPan(){
+  const zc=$("#targetZoom"); if(!zc) return;
+  ZPOINTERS.clear(); ZDRAG=null; ZPINCH=null;
+  applyZoomTransform();
+  zc.onpointerdown=(e)=>{
+    zc.setPointerCapture(e.pointerId);
+    ZPOINTERS.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ZPOINTERS.size===1){ ZDRAG={startX:e.clientX,startY:e.clientY,startTx:ZOOM.tx,startTy:ZOOM.ty,moved:false}; }
+    else if(ZPOINTERS.size===2){
+      ZDRAG=null;
+      const pts=[...ZPOINTERS.values()];
+      ZPINCH={ startDist:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y), startScale:ZOOM.scale,
+                midX:(pts[0].x+pts[1].x)/2, midY:(pts[0].y+pts[1].y)/2 };
+    }
+  };
+  zc.onpointermove=(e)=>{
+    if(!ZPOINTERS.has(e.pointerId)) return;
+    ZPOINTERS.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ZPINCH && ZPOINTERS.size===2){
+      const pts=[...ZPOINTERS.values()];
+      const dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      zoomAt(ZPINCH.midX,ZPINCH.midY,ZPINCH.startScale*(dist/ZPINCH.startDist));
+    } else if(ZDRAG && ZPOINTERS.size===1 && ZOOM.scale>1.01){
+      const dx=e.clientX-ZDRAG.startX, dy=e.clientY-ZDRAG.startY;
+      if(Math.hypot(dx,dy)>5){ ZDRAG.moved=true; zc.classList.add('panning'); }
+      ZOOM.tx=ZDRAG.startTx+dx; ZOOM.ty=ZDRAG.startTy+dy;
+      clampPan(); applyZoomTransform();
+    }
+  };
+  const endPointer=(e)=>{
+    ZPOINTERS.delete(e.pointerId);
+    if(ZDRAG && ZDRAG.moved) SUPPRESS_CLICK=true;
+    zc.classList.remove('panning');
+    if(ZPOINTERS.size<2) ZPINCH=null;
+    if(ZPOINTERS.size===0) ZDRAG=null;
+  };
+  zc.onpointerup=endPointer; zc.onpointercancel=endPointer;
+  zc.onwheel=(e)=>{ e.preventDefault(); zoomAt(e.clientX,e.clientY, ZOOM.scale*(e.deltaY<0?1.15:1/1.15)); };
+  zc.ondblclick=(e)=>{ if(ZOOM.scale>1.05) zoomReset(); else zoomAt(e.clientX,e.clientY,2.6); };
+}
+
+function targetSVG(se){
+  const f=faceModel(se.blasonCm,se.scoring);
+  const R=f.R;
+  const useHex = S.ui.hexGrid!==false; // mosaïque hexagonale par défaut
+  let rings, vb;
+  if(useHex){
+    const hx=hexFaceSVG(se,R);
+    rings=hx.svg; vb=hx.strawR*1.05;
+  } else {
+    vb=R*1.06; rings="";
+    for(let k=f.zones;k>=1;k--){
+      const rOuter=k*f.ringW;
+      const sc=11-k; // for 10z: k=10->1 ... k=1->10 ; for 6z: k=6->5 ... k=1->10
+      rings+=`<circle cx="0" cy="0" r="${rOuter}" fill="${zoneHex(sc)}" stroke="${sc<=2?'#bbb':'#0004'}" stroke-width="${R*0.004}"/>`;
+    }
+  }
+  // X ring outline (repère visuel, dans les deux modes)
+  rings+=`<circle cx="0" cy="0" r="${f.xRadius}" fill="none" stroke="#0006" stroke-width="${R*0.004}"/>`;
+  // spider lines
+  const cross=`<line x1="${-R*0.05}" y1="0" x2="${R*0.05}" y2="0" stroke="#0007" stroke-width="${R*0.004}"/><line x1="0" y1="${-R*0.05}" x2="0" y2="${R*0.05}" stroke="#0007" stroke-width="${R*0.004}"/>`;
+  const dots=CURRENT_END.filter(a=>a.x!=null).map(a=>`<circle cx="${a.x}" cy="${-a.y}" r="${R*0.028}" fill="#111" stroke="#F2C14E" stroke-width="${R*0.01}"/>`).join("");
+  return `<div class="targetzoom" id="targetZoom">
+      <div class="zoomlayer" id="targetWrap"><svg id="targetSVG" viewBox="${-vb} ${-vb} ${vb*2} ${vb*2}">${rings}${cross}${dots}</svg></div>
+      <div class="zoomctrls">
+        <button type="button" onclick="zoomStep(1.4)">+</button>
+        <button type="button" onclick="zoomStep(1/1.4)">–</button>
+        <button type="button" onclick="zoomReset()">⟲</button>
+      </div>
+      <div class="zoomhint" id="zoomHint">🔍 pince / molette pour zoomer</div>
+    </div>
+    <div class="pills" style="justify-content:center;margin-top:12px">
+      <button class="pill ${useHex?'on':''}" onclick="toggleHexGrid(true)">⬡ Mosaïque hexagonale</button>
+      <button class="pill ${!useHex?'on':''}" onclick="toggleHexGrid(false)">◎ Visée libre</button>
+    </div>
+    <div class="tlegend">
+      <span><i style="background:#F6D33C"></i>9-10</span><span><i style="background:#E23B2E"></i>7-8</span>
+      <span><i style="background:#2FA4DE"></i>5-6</span>${se.scoring!=='6z'?'<span><i style="background:#161616;border:1px solid #555"></i>3-4</span><span><i style="background:#EFEBDD"></i>1-2</span>':''}
+      ${useHex?'<span><i style="background:#D9C48F"></i>Hors blason</span>':''}
+    </div>`;
+}
+function attachTargetHandlers(se){
+  const svg=$("#targetSVG"); if(!svg) return;
+  if(S.ui.hexGrid===false){
+    // visée libre : conversion via getBoundingClientRect (fiable même sous transform CSS de zoom,
+    // contrairement à getScreenCTM qui ignore les transforms d'ancêtres HTML sur certains navigateurs, ex. Safari/iOS)
+    const f=faceModel(se.blasonCm,se.scoring);
+    const R=f.R, vb=R*1.06; // doit rester identique à la formule utilisée dans targetSVG()
+    const handler=(clientX,clientY)=>{
+      if(consumeSuppressClick()) return;
+      const rect=svg.getBoundingClientRect();
+      const relX=(clientX-rect.left)/rect.width, relY=(clientY-rect.top)/rect.height;
+      const userX=-vb+relX*vb*2, userY=-vb+relY*vb*2;
+      const x=userX, y=-userY; // y up positive
+      const r=Math.hypot(x,y);
+      const sc=scoreFromRadius(r,se.blasonCm,se.scoring);
+      addArrow({v:sc.v,isX:sc.isX,x:round(x,2),y:round(y,2)});
+    };
+    svg.addEventListener("click",e=>handler(e.clientX,e.clientY));
+  }
+}
+function addArrowScore(val){
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId); if(!se) return;
+  let f;
+  if(val==='X') f={v:10,isX:true,x:null,y:null};
+  else if(val==='M') f={v:0,isX:false,x:null,y:null};
+  else f={v:val,isX:false,x:null,y:null};
+  addArrow(f);
+}
+function addArrow(f){
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId); if(!se) return;
+  if(CURRENT_END.length>=se.flechesParVolee){ toast("Volée complète — valide-la"); return; }
+  CURRENT_END.push(f);
+  renderSaisie();
+}
+function undoArrow(){ CURRENT_END.pop(); renderSaisie(); }
+function validateEnd(){
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId); if(!se) return;
+  if(CURRENT_END.length!==se.flechesParVolee) return;
+  // ordre décroissant conventionnel dans la volée
+  const fl=[...CURRENT_END].sort((a,b)=>(b.v-a.v)||((b.isX?1:0)-(a.isX?1:0)));
+  se.volees.push({fleches:fl});
+  CURRENT_END=[]; saveState();
+  if(se.volees.length>=se.nbVolees){ toast("Dernière volée enregistrée 🎯"); }
+  renderSaisie();
+}
+function finishSeance(){
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId);
+  CURRENT_END=[]; saveState();
+  if(se && flatArrows(se).length) openAnalyse(se.id);
+  else { toast("Séance vide supprimée"); if(se) S.seances=S.seances.filter(x=>x.id!==se.id); saveState(); setView("seances"); }
+}
+
+/* ---------- VUE ANALYSE ---------- */
+function openAnalyse(id){ S.ui.analyseId=id; saveState(); setView("analyse"); }
+function renderAnalyse(){
+  const el=$("#view-analyse");
+  const se=S.seances.find(x=>x.id===S.ui.analyseId) || [...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  if(!se){ el.innerHTML=`<div class="empty"><h3>Rien à analyser</h3><p>Enregistre une séance pour voir l'analyse détaillée.</p><button class="btn primary" style="margin-top:12px" onclick="newSeance()">Nouvelle séance</button></div>`; return; }
+  S.ui.analyseId=se.id;
+  const D=diagnose(se), st=D.st;
+
+  // sélecteur de séance
+  const opts=[...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>`<option value="${s.id}" ${s.id===se.id?'selected':''}>${fmtDate(s.date)} · ${esc(s.discipline)} · ${seanceStats(s).total} pts</option>`).join("");
+
+  el.innerHTML=`
+    <div class="section-head">
+      <div><div class="eyebrow">Analyse de séance</div><h2>${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</h2>
+        <div class="hint">${fmtDate(se.date)} · ${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${st.n} flèches</div></div>
+      <div class="field" style="min-width:220px"><label>Séance analysée</label><select onchange="openAnalyse(this.value)">${opts}</select></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric accent"><div class="lab">Moyenne / flèche</div><div class="val">${round(st.avg,2)}</div></div>
+      <div class="metric"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+      <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div><div class="delta flat">${st.xs} X sur ${st.n} flèches</div></div>
+      ${st.disp && st.disp.angMrad!=null?
+        `<div class="metric"><div class="lab">Groupement normalisé</div><div class="val">${round(st.disp.angMrad,1)}<small>mrad</small></div><div class="delta flat">rating ≈ ${round(st.disp.ratingH,0)}</div></div>`
+        : `<div class="metric"><div class="lab">Taux de 10 · X</div><div class="val">${round(st.tenRate)}<small>%</small></div><div class="delta flat">${st.tens} dix · ${st.xs} X</div></div>`}
+      ${se.clickerTime?`<div class="metric"><div class="lab">Maintien post-clicker</div><div class="val">${se.clickerTime}<small>s</small></div></div>`:''}
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:14px">Précision & justesse — carte des impacts</div>
+      ${st.disp? analyseTarget(se,st.disp) : `<div class="hint">Cette séance a été saisie en mode rapide (sans position d'impact). Passe en mode « Pointer sur cible » à la saisie pour débloquer le groupement, le centrage (PIM), le cercle de dispersion et le <b>score potentiel</b>.</div>`}
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr;margin-top:14px">
+      <div class="panel">
+        <div class="eyebrow" style="margin-bottom:14px">Répartition par zone</div>
+        ${zoneDistHTML(se,st)}
+      </div>
+      <div class="panel">
+        <div class="eyebrow" style="margin-bottom:6px">Tendance intra-séance — total par volée</div>
+        <div class="hint" style="margin-bottom:12px">Repère la fatigue (baisse en fin) ou l'échauffement (montée au début).</div>
+        ${lineChartHTML(st.ets, {ylabel:"pts/volée"})}
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Synthèse — forces, faiblesses & axes de progrès</div>
+      ${diagListHTML(D)}
+    </div>
+
+    <div class="btnrow" style="margin-top:16px;justify-content:space-between">
+      <button class="btn sm" onclick="reopenSaisie('${se.id}')">↩︎ Reprendre la saisie</button>
+      <button class="btn sm danger" onclick="deleteSeance('${se.id}')">Supprimer la séance</button>
+    </div>
+    <div class="subnote">Les diagnostics sont une aide à la lecture de tes données, pas un substitut à l'œil d'un entraîneur. Ils gagnent en fiabilité au fil des séances.</div>
+  `;
+}
+function analyseTarget(se,d){
+  const f=faceModel(se.blasonCm,se.scoring); const R=f.R, vb=R*1.06;
+  let rings="";
+  for(let k=f.zones;k>=1;k--){ const sc=11-k; rings+=`<circle r="${k*f.ringW}" fill="${zoneHex(sc)}" stroke="#0004" stroke-width="${R*0.004}"/>`; }
+  rings+=`<circle r="${f.xRadius}" fill="none" stroke="#0006" stroke-width="${R*0.004}"/>`;
+  const arrows=flatArrows(se).filter(a=>a.x!=null);
+  const dots=arrows.map(a=>`<circle cx="${a.x}" cy="${-a.y}" r="${R*0.022}" fill="#111" stroke="#F2C14E" stroke-width="${R*0.008}" opacity="0.92"/>`).join("");
+  // cercle de dispersion (~68%) centré sur PIM
+  const scatter=`<circle cx="${d.mx}" cy="${-d.my}" r="${d.sdr}" fill="none" stroke="#6FCF97" stroke-width="${R*0.006}" stroke-dasharray="${R*0.02} ${R*0.02}"/>`;
+  // croix PIM
+  const cs=R*0.06;
+  const pim=`<g stroke="#E9E4D6" stroke-width="${R*0.008}">
+      <line x1="${d.mx-cs}" y1="${-d.my}" x2="${d.mx+cs}" y2="${-d.my}"/>
+      <line x1="${d.mx}" y1="${-d.my-cs}" x2="${d.mx}" y2="${-d.my+cs}"/></g>
+    <circle cx="${d.mx}" cy="${-d.my}" r="${R*0.012}" fill="#E9E4D6"/>`;
+  const dirH=d.mx>=0?"droite":"gauche", dirV=d.my>=0?"haut":"bas";
+  return `
+  <div class="saisie-layout" style="grid-template-columns:1fr">
+    <div style="display:grid;grid-template-columns:1fr;gap:16px">
+      <div class="targetwrap" style="max-width:400px">
+        <svg viewBox="${-vb} ${-vb} ${vb*2} ${vb*2}">${rings}${scatter}${dots}${pim}</svg>
+      </div>
+      <div class="tlegend">
+        <span><i style="background:#F2C14E"></i>Point d'impact moyen (justesse)</span>
+        <span><i style="background:#6FCF97"></i>Cercle de dispersion ≈ 68 % (précision)</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="lab">Groupement (rayon moyen)</div><div class="val">${round(d.rmean)}<small>cm</small></div><div class="delta flat">étalement max ${round(d.spread)} cm</div></div>
+        <div class="metric"><div class="lab">Écart-type H / V</div><div class="val" style="font-size:20px">${round(d.sdx)} / ${round(d.sdy)}<small>cm</small></div></div>
+        <div class="metric"><div class="lab">Centrage (PIM → centre)</div><div class="val">${round(d.dCenter)}<small>cm</small></div><div class="delta flat">${round(Math.abs(d.mx))} ${dirH} · ${round(Math.abs(d.my))} ${dirV}</div></div>
+        <div class="metric accent"><div class="lab">Score potentiel (recentré)</div><div class="val">${d.potential}<small> / ${d.actualPlotted}</small></div><div class="delta ${d.gain>0?'up':'flat'}">${d.gain>0?`+${d.gain} pts à gagner par le centrage`:'déjà centré'}</div></div>
+        ${d.angMrad!=null?`<div class="metric"><div class="lab">Déviation angulaire</div><div class="val">${round(d.angMrad,1)}<small>mrad</small></div><div class="delta flat">comparable entre distances</div></div>
+        <div class="metric"><div class="lab">Rating estimé</div><div class="val">${round(d.ratingH,0)}</div><div class="delta flat">méthode handicap · plus bas = mieux</div></div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+function zoneDistHTML(se,st){
+  const scoring=se.scoring; const minV=scoring==="6z"?5:0;
+  const max=Math.max(1,...Object.values(st.dist));
+  let rows="";
+  for(let v=10;v>=minV;v--){
+    if(scoring==="6z" && v<5) break;
+    const c=st.dist[v]||0; const pct=c/st.n*100;
+    const lbl=v===0?"M":v;
+    rows+=`<div class="bar-row">
+      <div class="zl" style="color:${zoneColor(v)}">${lbl}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${c/max*100}%;background:${zoneHex(v)}"></div></div>
+      <div class="zc">${c} · ${round(pct)}%</div></div>`;
+  }
+  if(scoring!=="6z"){ const c=st.dist[0]||0; }
+  return rows;
+}
+function lineChartHTML(vals,opts={}){
+  if(!vals.length) return `<div class="hint">Pas de données.</div>`;
+  const W=100, H=42, pad=3;
+  const min=Math.min(...vals), max=Math.max(...vals);
+  const rng=(max-min)||1;
+  const pts=vals.map((v,i)=>{
+    const x=pad+(vals.length===1?0.5:i/(vals.length-1))*(W-pad*2);
+    const y=H-pad-((v-min)/rng)*(H-pad*2);
+    return [x,y];
+  });
+  const path=pts.map((p,i)=>(i?"L":"M")+round(p[0],2)+" "+round(p[1],2)).join(" ");
+  const area=`M${pts[0][0]} ${H} `+pts.map(p=>"L"+round(p[0],2)+" "+round(p[1],2)).join(" ")+` L${pts[pts.length-1][0]} ${H} Z`;
+  const dots=pts.map((p,i)=>`<circle cx="${round(p[0],2)}" cy="${round(p[1],2)}" r="0.9" fill="#F2C14E"/>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:130px">
+    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C14E" stop-opacity=".28"/><stop offset="1" stop-color="#F2C14E" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#ag)"/>
+    <path d="${path}" fill="none" stroke="#F2C14E" stroke-width="0.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px"><span>volée 1</span><span>${opts.ylabel||''} · min ${min} / max ${max}</span><span>volée ${vals.length}</span></div>`;
+}
+function diagListHTML(D){
+  const item=(cls,ic,t,p)=>`<div class="diag-item ${cls}"><div class="ic">${ic}</div><div class="tx"><h4>${t}</h4><p>${p}</p></div></div>`;
+  const icF=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+  const icX=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5m0 3h.01"/><circle cx="12" cy="12" r="9"/></svg>`;
+  const icA=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>`;
+  let h="";
+  D.forces.forEach(x=>h+=item("force",icF,x[0],x[1]));
+  D.faibles.forEach(x=>h+=item("faible",icX,x[0],x[1]));
+  D.axes.forEach(x=>h+=item("axe",icA,x[0],x[1]));
+  if(!h) h=`<div class="hint">Ajoute quelques volées pour générer une synthèse.</div>`;
+  return `<div class="diag">${h}</div>`;
+}
+function reopenSaisie(id){ S.ui.activeSeanceId=id; CURRENT_END=[]; resetZoomState(); saveState(); setView("saisie"); }
+function deleteSeance(id){
+  modal(`<h3>Supprimer cette séance ?</h3><p class="hint">Cette action est définitive.</p>
+    <div class="btnrow" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn danger" onclick="confirmDelete('${id}')">Supprimer</button></div>`);
+}
+function confirmDelete(id){ S.seances=S.seances.filter(x=>x.id!==id); saveState(); closeModal(); toast("Séance supprimée"); setView("seances"); }
+
+/* ---------- VUE PROGRESSION ---------- */
+function renderProgression(){
+  const el=$("#view-progression");
+  const seances=[...S.seances].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(seances.length<1){ el.innerHTML=`<div class="empty"><h3>Pas encore de progression</h3><p>Enregistre plusieurs séances pour visualiser l'évolution de ta moyenne et de ta régularité.</p><button class="btn primary" style="margin-top:12px" onclick="newSeance()">Nouvelle séance</button></div>`; return; }
+  const stats=seances.map(s=>({se:s,st:seanceStats(s)}));
+  const avgSeries=stats.map(x=>round(x.st.avg,2));
+  const ratingStats=stats.filter(x=>x.st.disp && x.st.disp.ratingH!=null);
+  const ratingSeries=ratingStats.map(x=>round(x.st.disp.ratingH,1));
+  const clickerStats=stats.filter(x=>x.se.clickerTime);
+  const clickerSeries=clickerStats.map(x=>x.se.clickerTime);
+  const bestAvg=Math.max(...stats.map(x=>x.st.avg));
+  const lastAvg=stats[stats.length-1].st.avg;
+  const firstAvg=stats[0].st.avg;
+  const trend=lastAvg-firstAvg;
+
+  el.innerHTML=`
+    <div class="section-head"><div><div class="eyebrow">Vue d'ensemble</div><h2>Progression</h2></div></div>
+    <div class="metrics">
+      <div class="metric accent"><div class="lab">Moyenne récente</div><div class="val">${round(lastAvg,2)}<small>/fl</small></div><div class="delta ${trend>=0?'up':'down'}">${trend>=0?'▲':'▼'} ${round(Math.abs(trend),2)} depuis le début</div></div>
+      <div class="metric"><div class="lab">Record de moyenne</div><div class="val">${round(bestAvg,2)}<small>/fl</small></div></div>
+      <div class="metric"><div class="lab">Séances</div><div class="val">${seances.length}</div></div>
+      <div class="metric"><div class="lab">Flèches cumulées</div><div class="val">${seances.reduce((s,x)=>s+flatArrows(x).length,0)}</div></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:6px">Moyenne par flèche — séance après séance</div>
+      <div class="hint" style="margin-bottom:12px">La courbe de fond que ta mémoire ne retient pas : la tendance réelle de ta performance.</div>
+      ${multiLineHTML(avgSeries,"#F2C14E","/fl")}
+    </div>
+    ${ratingSeries.length>=2?`<div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:6px">Rating estimé (méthode handicap) — plus c'est bas, mieux c'est</div>
+      <div class="hint" style="margin-bottom:12px">Basé sur la déviation angulaire du groupement (mrad), normalisée par la distance — calculable dès que tu pointes tes impacts avec une distance renseignée.</div>
+      ${multiLineHTML(ratingSeries,"#5FB8D6","rating")}
+    </div>`:''}
+    ${clickerSeries.length>=2?`<div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:6px">Temps de maintien post-clicker — séance après séance</div>
+      <div class="hint" style="margin-bottom:12px">La recherche sur les archers d'élite associe le temps de réaction au clicker à la performance. Suivi manuel, à titre indicatif.</div>
+      ${multiLineHTML(clickerSeries,"#F2C14E","s")}
+    </div>`:''}
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Comparer deux séances (par discipline/distance)</div>
+      ${byContextHTML(stats)}
+    </div>
+  `;
+}
+function multiLineHTML(vals,color,unit,invert){
+  if(!vals.length) return `<div class="hint">Pas de données.</div>`;
+  const W=100,H=44,pad=3;
+  const min=Math.min(...vals),max=Math.max(...vals),rng=(max-min)||1;
+  const pts=vals.map((v,i)=>{const x=pad+(vals.length===1?0.5:i/(vals.length-1))*(W-pad*2);const y=H-pad-((v-min)/rng)*(H-pad*2);return [x,y];});
+  const path=pts.map((p,i)=>(i?"L":"M")+round(p[0],2)+" "+round(p[1],2)).join(" ");
+  const dots=pts.map(p=>`<circle cx="${round(p[0],2)}" cy="${round(p[1],2)}" r="1" fill="${color}"/>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:150px">
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px"><span>S1</span><span>min ${round(min,2)} / max ${round(max,2)} ${unit}</span><span>S${vals.length}</span></div>`;
+}
+function byContextHTML(stats){
+  const groups={};
+  stats.forEach(x=>{ const k=`${x.se.discipline}${x.se.distance?" "+x.se.distance+"m":""} · Ø${x.se.blasonCm}`; (groups[k]=groups[k]||[]).push(x); });
+  return Object.entries(groups).map(([k,arr])=>{
+    const avg=arr.reduce((s,x)=>s+x.st.avg,0)/arr.length;
+    const best=Math.max(...arr.map(x=>x.st.total));
+    return `<div class="volee-row"><div class="arrows" style="flex-direction:column;gap:2px"><b style="font-family:var(--disp);font-size:14px">${esc(k)}</b><span class="hint">${arr.length} séance(s) · record ${best} pts</span></div><span class="tot mono" style="color:var(--gold)">${round(avg,2)}</span></div>`;
+  }).join("");
+}
+
+/* ---------- VUE COACHING ---------- */
+function renderCoaching(){
+  const el=$("#view-coaching");
+  const seances=[...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const last=seances[0];
+  const obj=S.objectif||{};
+  let objBlock;
+  const recentAvg=last?seanceStats(last).avg:null;
+  if(obj.moyenneCible){
+    const pct=recentAvg?Math.min(100,recentAvg/obj.moyenneCible*100):0;
+    objBlock=`<div class="metric accent" style="margin-bottom:0">
+        <div class="lab">Objectif de moyenne</div>
+        <div class="val">${round(recentAvg||0,2)} <small>/ ${obj.moyenneCible} visé</small></div>
+        <div class="bar-track" style="margin-top:10px"><div class="bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
+        <div class="delta flat" style="margin-top:6px">${round(pct)} % de l'objectif${recentAvg>=obj.moyenneCible?' — atteint 🎯':''}</div>
+      </div>`;
+  } else objBlock=`<div class="hint">Aucun objectif défini. Fixe une moyenne cible pour suivre ta progression vers un cap (passage de classe, record personnel…).</div>`;
+
+  // agrégat forces/faiblesses sur les 3 dernières séances tracées
+  const recent=seances.slice(0,5);
+  const agg={};
+  recent.forEach(se=>{ const D=diagnose(se); [...D.forces.map(x=>["force",x[0]]),...D.faibles.map(x=>["faible",x[0]]),...D.axes.map(x=>["axe",x[0]])].forEach(([t,label])=>{ agg[label]=agg[label]||{t,n:0}; agg[label].n++; }); });
+  const recurrent=Object.entries(agg).filter(([l,o])=>o.n>=2).sort((a,b)=>b[1].n-a[1].n);
+
+  el.innerHTML=`
+    <div class="section-head"><div><div class="eyebrow">Plan de travail</div><h2>Coaching</h2></div></div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="eyebrow">Objectif</div>
+        <button class="btn ghost sm" onclick="editObjectif()">Modifier</button>
+      </div>
+      ${objBlock}
+      ${obj.note?`<div class="subnote" style="margin-top:12px;color:var(--ink)">“${esc(obj.note)}”</div>`:""}
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Constantes récentes (5 dernières séances)</div>
+      ${recurrent.length? `<div class="diag">`+recurrent.map(([label,o])=>{
+        const cls=o.t; const ic = cls==='force'?"✓":cls==='faible'?"!":"→";
+        return `<div class="diag-item ${cls}"><div class="ic">${ic}</div><div class="tx"><h4>${esc(label)}</h4><p>Revient sur <b>${o.n}</b> de tes séances récentes.</p></div></div>`;
+      }).join("")+`</div>` : `<div class="hint">Enregistre au moins 2 séances pour faire ressortir tes constantes (forces récurrentes et points à travailler).</div>`}
+    </div>
+
+    ${last?`<div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Synthèse de ta dernière séance — ${fmtDate(last.date)}</div>
+      ${diagListHTML(diagnose(last))}
+      <div class="btnrow" style="margin-top:14px"><button class="btn sm" onclick="openAnalyse('${last.id}')">Voir l'analyse complète →</button></div>
+    </div>`:''}
+
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:10px">Repères de lecture — méthodes utilisées en compétition</div>
+      <div class="diag">
+        <div class="diag-item axe"><div class="ic">i</div><div class="tx"><h4>Précision vs justesse</h4><p><b>Groupement serré + décentré</b> → problème de réglage/visée (regarde le score potentiel). <b>Groupe large + centré</b> → problème de régularité du geste. C'est la distinction au cœur du coaching de haut niveau.</p></div></div>
+        <div class="diag-item axe"><div class="ic">i</div><div class="tx"><h4>Direction du biais</h4><p>Décalage <b>horizontal</b> → dérive/alignement/torsion de poignée. Décalage <b>vertical</b> → hausse du viseur, ancrage, ou timing de décoche.</p></div></div>
+        <div class="diag-item axe"><div class="ic">i</div><div class="tx"><h4>Groupement en mrad & rating</h4><p>Les systèmes de classement (handicap UK Archery / Archery Australia) mesurent la déviation angulaire du groupement plutôt que le score brut, car elle reste comparable quelle que soit la distance de tir. Sagitta calcule un rating estimé sur ce principe dès que tu pointes tes impacts avec une distance renseignée — ce n'est pas le handicap officiel, mais la même logique.</p></div></div>
+        <div class="diag-item axe"><div class="ic">i</div><div class="tx"><h4>Taux de X</h4><p>La proportion de X (10 dans l'anneau intérieur) est l'indicateur de précision au plus haut niveau : deux archers à moyenne égale se distinguent souvent par leur taux de X.</p></div></div>
+        <div class="diag-item axe"><div class="ic">i</div><div class="tx"><h4>Cycle de tir & clicker</h4><p>Les études sur archers d'élite associent la stabilité posturale, le temps de réaction au clicker et l'exécution du cycle de tir à la performance. Sagitta permet de logger manuellement ton temps de maintien post-clicker pour en suivre la tendance — un proxy simple de ce que mesurent les capteurs des centres nationaux.</p></div></div>
+      </div>
+    </div>
+  `;
+}
+function editObjectif(){
+  const o=S.objectif||{};
+  modal(`<h3>Objectif</h3>
+    <div class="field"><label>Moyenne cible (points / flèche)</label><input type="number" id="ob-avg" step="0.1" min="0" max="10" value="${o.moyenneCible||''}" placeholder="Ex. 9.2"></div>
+    <div class="field" style="margin-top:12px"><label>Note / cap visé</label><input id="ob-note" value="${esc(o.note||'')}" placeholder="Ex. passer 1re classe salle, viser 560 sur un 60 flèches…"></div>
+    <div class="btnrow" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn primary" onclick="saveObjectif()">Enregistrer</button></div>`);
+}
+function saveObjectif(){ const a=parseFloat($("#ob-avg").value); S.objectif={moyenneCible:isNaN(a)?null:a, note:$("#ob-note").value.trim()}; saveState(); closeModal(); toast("Objectif mis à jour"); render(); }
+
+/* ---------- MODALE ---------- */
+function modal(html){ $("#modal-root").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`; }
+function closeModal(){ $("#modal-root").innerHTML=""; }
+
+/* ============================================================
+   MON ARCHERIE — matériel : arcs, flèches, viseurs
+   ============================================================ */
+function setMaterielTab(t){ S.ui.materielTab=t; saveState(); renderMateriel(); }
+function renderMateriel(){
+  const el=$("#view-materiel");
+  const tab=S.ui.materielTab||"arcs";
+  el.innerHTML=`
+    <div class="section-head"><div><div class="eyebrow">Mon matériel</div><h2>Archerie</h2></div></div>
+    <div class="pills" style="margin-bottom:16px">
+      <button class="pill ${tab==='arcs'?'on':''}" onclick="setMaterielTab('arcs')">🏹 Arcs</button>
+      <button class="pill ${tab==='fleches'?'on':''}" onclick="setMaterielTab('fleches')">➶ Flèches</button>
+      <button class="pill ${tab==='viseurs'?'on':''}" onclick="setMaterielTab('viseurs')">🎯 Viseurs</button>
+    </div>
+    ${tab==='arcs'?renderArcsSection():tab==='fleches'?renderFlechesSection():renderViseursSection()}
+  `;
+}
+
+/* ---------- redimensionnement photo (évite de saturer le localStorage) ---------- */
+function resizeImageToDataURL(file,maxW,cb){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,maxW/img.naturalWidth);
+      const w=Math.round(img.naturalWidth*scale), h=Math.round(img.naturalHeight*scale);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.72));
+    };
+    img.onerror=()=>toast("Impossible de lire cette image");
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- ARCS ---------- */
+function renderArcsSection(){
+  const arcs=S.materiel.arcs;
+  let list;
+  if(!arcs.length){
+    list=`<div class="empty">
+      <div style="font-size:42px;margin-bottom:10px">🏹</div>
+      <h3>Aucun arc enregistré</h3>
+      <p>Ajoute tes arcs pour les retrouver directement au lancement d'une séance, avec tous leurs réglages.</p>
+      <button class="btn primary" style="margin-top:14px" onclick="openArcForm()">+ Ajouter un arc</button>
+    </div>`;
+  } else {
+    list=`<div class="slist">`+arcs.map(a=>`<button class="scard" onclick="openArcForm('${a.id}')">
+      <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex:0 0 auto;background:var(--panel2);display:flex;align-items:center;justify-content:center">
+        ${a.photo?`<img src="${a.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:22px">🏹</span>'}
+      </div>
+      <div class="meta"><div class="t">${esc(a.nom)}</div>
+        <div class="s">${esc(a.type)}${a.puissance?` · ${a.puissance} lbs`:''}${a.dateAchat?` · acheté ${fmtDate(a.dateAchat)}`:''}</div></div>
+      <div class="sc"><span class="tag">Voir</span></div>
+    </button>`).join("")+`</div>`;
+  }
+  return `<div class="section-head"><div class="hint">${arcs.length} arc(s) enregistré(s)</div>${arcs.length?'<button class="btn primary sm" onclick="openArcForm()">+ Nouvel arc</button>':''}</div>${list}`;
+}
+let ARC_PHOTO_PENDING=null;
+function openArcForm(id){
+  const a = id? S.materiel.arcs.find(x=>x.id===id) : null;
+  const editing=!!a;
+  ARC_PHOTO_PENDING = a&&a.photo? a.photo : null;
+  modal(`
+    <h3>${editing?"Modifier l'arc":"Nouvel arc"}</h3>
+    <div class="grid" style="gap:14px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div id="arc-photo-preview" style="width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--panel2);flex:0 0 auto;display:flex;align-items:center;justify-content:center">
+          ${a&&a.photo?`<img src="${a.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:26px">🏹</span>'}
+        </div>
+        <label class="btn sm" style="cursor:pointer">Photo<input type="file" accept="image/*" style="display:none" onchange="handleArcPhoto(event)"></label>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Nom de l'arc</label><input id="arc-nom" value="${esc(a?a.nom:'')}" placeholder="Ex. Mon Hoyt salle"></div>
+        <div class="field"><label>Type</label><select id="arc-type">${ARCS.map(t=>`<option ${(a?a.type===t:t===ARCS[0])?'selected':''}>${t}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="arc-desc" rows="2" placeholder="Notes libres…">${esc(a?a.description:'')}</textarea></div>
+      <div class="formgrid">
+        <div class="field"><label>Date d'achat</label><input type="date" id="arc-date" value="${a&&a.dateAchat?a.dateAchat:''}"></div>
+        <div class="field"><label>Puissance (lbs)</label><input type="number" id="arc-puissance" step="0.5" value="${a&&a.puissance!=null?a.puissance:''}"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Band (cm)</label><input id="arc-band" value="${esc(a?a.band:'')}" placeholder="Ex. 8.5"></div>
+        <div class="field"><label>Tiller</label><input id="arc-tiller" value="${esc(a?a.tiller:'')}" placeholder="Ex. haut +2 mm"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Détalonnage</label><input id="arc-detalonnage" value="${esc(a?a.detalonnage:'')}" placeholder="Ex. 3 mm"></div>
+        <div class="field"><label>Distance clicker (cm)</label><input id="arc-clicker" value="${esc(a?a.clickerDist:'')}" placeholder="Ex. 1.5"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Branches</label><input id="arc-branches" value="${esc(a?a.branches:'')}" placeholder="Marque, modèle, livres…"></div>
+        <div class="field"><label>Poignée</label><input id="arc-poignee" value="${esc(a?a.poignee:'')}" placeholder="Marque, modèle, taille…"></div>
+      </div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:space-between">
+      ${editing?`<button class="btn danger sm" onclick="deleteArc('${a.id}')">Supprimer</button>`:'<span></span>'}
+      <div class="btnrow">
+        <button class="btn ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn primary" onclick="saveArc(${editing?`'${a.id}'`:'null'})">Enregistrer</button>
+      </div>
+    </div>`);
+}
+function handleArcPhoto(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  resizeImageToDataURL(file,360,url=>{
+    ARC_PHOTO_PENDING=url;
+    const prev=$("#arc-photo-preview"); if(prev) prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  });
+}
+function saveArc(id){
+  const nom=$("#arc-nom").value.trim();
+  if(!nom){ toast("Donne un nom à ton arc"); return; }
+  const data={
+    nom, type:$("#arc-type").value,
+    description:$("#arc-desc").value.trim(),
+    dateAchat:$("#arc-date").value||null,
+    band:$("#arc-band").value.trim(),
+    tiller:$("#arc-tiller").value.trim(),
+    detalonnage:$("#arc-detalonnage").value.trim(),
+    puissance: $("#arc-puissance").value?parseFloat($("#arc-puissance").value):null,
+    clickerDist:$("#arc-clicker").value.trim(),
+    branches:$("#arc-branches").value.trim(),
+    poignee:$("#arc-poignee").value.trim(),
+    photo: ARC_PHOTO_PENDING
+  };
+  if(id){ Object.assign(S.materiel.arcs.find(x=>x.id===id),data); }
+  else { data.id=uid(); S.materiel.arcs.push(data); }
+  saveState(); closeModal(); toast("Arc enregistré"); renderMateriel();
+}
+function deleteArc(id){
+  modal(`<h3>Supprimer cet arc ?</h3><p class="hint">Les séances déjà enregistrées garderont juste le type d'arc en texte ; elles ne seront plus liées à cette fiche matériel.</p>
+    <div class="btnrow" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" onclick="openArcForm('${id}')">Annuler</button>
+      <button class="btn danger" onclick="confirmDeleteArc('${id}')">Supprimer</button></div>`);
+}
+function confirmDeleteArc(id){
+  S.materiel.arcs=S.materiel.arcs.filter(x=>x.id!==id);
+  saveState(); closeModal(); toast("Arc supprimé"); renderMateriel();
+}
+
+/* ---------- FLÈCHES (fiche détaillée) ---------- */
+function renderFlechesSection(){
+  const items=S.materiel.fleches;
+  let list;
+  if(!items.length){
+    list=`<div class="empty">
+      <div style="font-size:42px;margin-bottom:10px">➶</div>
+      <h3>Aucun jeu de flèches enregistré</h3>
+      <p>Ajoute tes jeux de flèches pour les retrouver au lancement d'une séance, avec toutes leurs caractéristiques.</p>
+      <button class="btn primary" style="margin-top:14px" onclick="openFlecheForm()">+ Ajouter un jeu de flèches</button>
+    </div>`;
+  } else {
+    list=`<div class="slist">`+items.map(fl=>`<button class="scard" onclick="openFlecheForm('${fl.id}')">
+      <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex:0 0 auto;background:var(--panel2);display:flex;align-items:center;justify-content:center">
+        ${fl.photo?`<img src="${fl.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:22px">➶</span>'}
+      </div>
+      <div class="meta"><div class="t">${esc(fl.nom)}</div>
+        <div class="s">${[fl.longueur?`${fl.longueur} cm`:'',fl.rigidite?`rigidité ${fl.rigidite}`:'',fl.diametre?`Ø${fl.diametre} mm`:''].filter(Boolean).join(' · ')||'—'}</div></div>
+      <div class="sc"><span class="tag">Voir</span></div>
+    </button>`).join("")+`</div>`;
+  }
+  return `<div class="section-head"><div class="hint">${items.length} jeu(x) de flèches enregistré(s)</div>${items.length?'<button class="btn primary sm" onclick="openFlecheForm()">+ Nouveau jeu</button>':''}</div>${list}`;
+}
+let FLECHE_PHOTO_PENDING=null;
+function openFlecheForm(id){
+  const fl = id? S.materiel.fleches.find(x=>x.id===id) : null;
+  const editing=!!fl;
+  FLECHE_PHOTO_PENDING = fl&&fl.photo? fl.photo : null;
+  modal(`
+    <h3>${editing?'Modifier le jeu de flèches':'Nouveau jeu de flèches'}</h3>
+    <div class="grid" style="gap:14px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div id="fleche-photo-preview" style="width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--panel2);flex:0 0 auto;display:flex;align-items:center;justify-content:center">
+          ${fl&&fl.photo?`<img src="${fl.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:26px">➶</span>'}
+        </div>
+        <label class="btn sm" style="cursor:pointer">Photo<input type="file" accept="image/*" style="display:none" onchange="handleFlechePhoto(event)"></label>
+      </div>
+      <div class="field"><label>Nom du jeu de flèches</label><input id="fleche-nom" value="${esc(fl?fl.nom:'')}" placeholder="Ex. Easton X10 salle"></div>
+      <div class="formgrid">
+        <div class="field"><label>Longueur (cm)</label><input id="fleche-longueur" type="number" step="0.1" value="${fl&&fl.longueur!=null?fl.longueur:''}" placeholder="Ex. 28.5"></div>
+        <div class="field"><label>Diamètre (mm)</label><input id="fleche-diametre" type="number" step="0.01" value="${fl&&fl.diametre!=null?fl.diametre:''}" placeholder="Ex. 4.2"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Rigidité (spine)</label><input id="fleche-rigidite" value="${esc(fl?fl.rigidite:'')}" placeholder="Ex. 600"></div>
+        <div class="field"><label>Date d'achat</label><input type="date" id="fleche-date" value="${fl&&fl.dateAchat?fl.dateAchat:''}"></div>
+      </div>
+      <div class="formgrid">
+        <div class="field"><label>Référence des plumes</label><input id="fleche-plumes" value="${esc(fl?fl.plumes:'')}" placeholder="Marque, modèle, taille…"></div>
+        <div class="field"><label>Référence de la pointe</label><input id="fleche-pointe" value="${esc(fl?fl.pointe:'')}" placeholder="Marque, modèle, poids…"></div>
+      </div>
+      <div class="field"><label>Encoche</label><input id="fleche-encoche" value="${esc(fl?fl.encoche:'')}" placeholder="Marque, modèle, couleur…"></div>
+      <div class="field"><label>Commentaire</label><textarea id="fleche-commentaire" rows="2" placeholder="Notes libres…">${esc(fl?fl.commentaire:'')}</textarea></div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:space-between">
+      ${editing?`<button class="btn danger sm" onclick="deleteFleche('${fl.id}')">Supprimer</button>`:'<span></span>'}
+      <div class="btnrow">
+        <button class="btn ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn primary" onclick="saveFleche(${editing?`'${fl.id}'`:'null'})">Enregistrer</button>
+      </div>
+    </div>`);
+}
+function handleFlechePhoto(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  resizeImageToDataURL(file,360,url=>{
+    FLECHE_PHOTO_PENDING=url;
+    const prev=$("#fleche-photo-preview"); if(prev) prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  });
+}
+function saveFleche(id){
+  const nom=$("#fleche-nom").value.trim();
+  if(!nom){ toast("Donne un nom à ce jeu de flèches"); return; }
+  const data={
+    nom,
+    longueur: $("#fleche-longueur").value?parseFloat($("#fleche-longueur").value):null,
+    diametre: $("#fleche-diametre").value?parseFloat($("#fleche-diametre").value):null,
+    rigidite: $("#fleche-rigidite").value.trim(),
+    dateAchat: $("#fleche-date").value||null,
+    plumes: $("#fleche-plumes").value.trim(),
+    pointe: $("#fleche-pointe").value.trim(),
+    encoche: $("#fleche-encoche").value.trim(),
+    commentaire: $("#fleche-commentaire").value.trim(),
+    photo: FLECHE_PHOTO_PENDING
+  };
+  if(id){ Object.assign(S.materiel.fleches.find(x=>x.id===id),data); }
+  else { data.id=uid(); S.materiel.fleches.push(data); }
+  saveState(); closeModal(); toast("Jeu de flèches enregistré"); renderMateriel();
+}
+function deleteFleche(id){
+  modal(`<h3>Supprimer ce jeu de flèches ?</h3><p class="hint">Les séances déjà enregistrées garderont juste une référence textuelle ; elles ne seront plus liées à cette fiche matériel.</p>
+    <div class="btnrow" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" onclick="openFlecheForm('${id}')">Annuler</button>
+      <button class="btn danger" onclick="confirmDeleteFleche('${id}')">Supprimer</button></div>`);
+}
+function confirmDeleteFleche(id){
+  S.materiel.fleches=S.materiel.fleches.filter(x=>x.id!==id);
+  saveState(); closeModal(); toast("Jeu de flèches supprimé"); renderMateriel();
+}
+
+/* ---------- VISEURS (fiche détaillée + réglages multi-distances + courbe prévisionnelle) ---------- */
+const VISEUR_TYPES=["Viseur classique (curseur)","Viseur scope (poulie)","Viseur micro-métrique","Autre"];
+const CONDITIONS_TIR=["Salle","Extérieur"];
+
+/* régression polynomiale (degré 1 ou 2) par moindres carrés, sans dépendance externe */
+function polyFit(points,degree){
+  const n=points.length;
+  if(degree===1){
+    if(n<2) return null;
+    let sx=0,sy=0,sxx=0,sxy=0;
+    points.forEach(p=>{sx+=p.x;sy+=p.y;sxx+=p.x*p.x;sxy+=p.x*p.y;});
+    const denom=n*sxx-sx*sx; if(Math.abs(denom)<1e-9) return null;
+    const b=(n*sxy-sx*sy)/denom, a=(sy-b*sx)/n;
+    return [a,b];
+  }
+  if(n<3) return null;
+  let S0=n,S1=0,S2=0,S3=0,S4=0,T0=0,T1=0,T2=0;
+  points.forEach(p=>{ const x=p.x,y=p.y,x2=x*x; S1+=x;S2+=x2;S3+=x2*x;S4+=x2*x2; T0+=y;T1+=x*y;T2+=x2*y; });
+  const A=[[S0,S1,S2],[S1,S2,S3],[S2,S3,S4]], B=[T0,T1,T2];
+  function det3(m){ return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]); }
+  const D=det3(A); if(Math.abs(D)<1e-9) return null;
+  const repl=(col,vals)=>A.map((row,i)=>row.map((v,j)=>j===col?vals[i]:v));
+  return [det3(repl(0,B))/D, det3(repl(1,B))/D, det3(repl(2,B))/D];
+}
+function evalPoly(c,x){ if(!c) return null; return c.length===2? c[0]+c[1]*x : c[0]+c[1]*x+c[2]*x*x; }
+
+function renderViseursSection(){
+  if(S.ui.viseurDetailId){
+    const v=S.materiel.viseurs.find(x=>x.id===S.ui.viseurDetailId);
+    if(v) return renderViseurDetail(v);
+    S.ui.viseurDetailId=null;
+  }
+  const items=S.materiel.viseurs;
+  let list;
+  if(!items.length){
+    list=`<div class="empty">
+      <div style="font-size:42px;margin-bottom:10px">🎯</div>
+      <h3>Aucun viseur enregistré</h3>
+      <p>Ajoute tes viseurs pour garder tes réglages par distance et générer une courbe prévisionnelle.</p>
+      <button class="btn primary" style="margin-top:14px" onclick="openViseurForm()">+ Ajouter un viseur</button>
+    </div>`;
+  } else {
+    list=`<div class="slist">`+items.map(v=>`<button class="scard" onclick="openViseurDetail('${v.id}')">
+      <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex:0 0 auto;background:var(--panel2);display:flex;align-items:center;justify-content:center">
+        ${v.photo?`<img src="${v.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:22px">🎯</span>'}
+      </div>
+      <div class="meta"><div class="t">${esc(v.nom)}</div>
+        <div class="s">${[v.type,v.grossissement?`grossissement ${esc(v.grossissement)}`:'',(v.reglages||[]).length?`${v.reglages.length} réglage(s)`:''].filter(Boolean).join(' · ')}</div></div>
+      <div class="sc"><span class="tag">Voir</span></div>
+    </button>`).join("")+`</div>`;
+  }
+  return `<div class="section-head"><div class="hint">${items.length} viseur(s) enregistré(s)</div>${items.length?'<button class="btn primary sm" onclick="openViseurForm()">+ Nouveau viseur</button>':''}</div>${list}`;
+}
+function openViseurDetail(id){ S.ui.viseurDetailId=id; saveState(); renderMateriel(); }
+function closeViseurDetail(){ S.ui.viseurDetailId=null; saveState(); renderMateriel(); }
+function renderViseurDetail(v){
+  return `
+    <div class="section-head">
+      <button class="btn ghost sm" onclick="closeViseurDetail()">← Retour</button>
+      <button class="btn sm" onclick="openViseurForm('${v.id}')">Modifier</button>
+    </div>
+    <div class="panel">
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+        <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;background:var(--panel2);flex:0 0 auto;display:flex;align-items:center;justify-content:center">
+          ${v.photo?`<img src="${v.photo}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:26px">🎯</span>'}
+        </div>
+        <div><h3 style="font-size:19px">${esc(v.nom)}</h3><div class="hint">${[v.type,v.grossissement?`grossissement ${esc(v.grossissement)}`:'',v.typeVerre].filter(Boolean).map(x=>esc(x)).join(' · ')}</div></div>
+      </div>
+      ${v.commentaire?`<div class="subnote" style="margin-bottom:14px;color:var(--ink)">${esc(v.commentaire)}</div>`:''}
+      <div class="eyebrow" style="margin-bottom:10px">Courbe prévisionnelle des réglages</div>
+      ${viseurCurveHTML(v)}
+      <div class="divider"></div>
+      <div class="eyebrow" style="margin-bottom:10px">Réglages enregistrés</div>
+      ${viseurReglagesTableHTML(v)}
+    </div>`;
+}
+function viseurCurveHTML(v){
+  const all=v.reglages||[];
+  const pts=all.filter(r=>r.distance!=null && r.reglage!=null);
+  const incomplete=all.filter(r=>(r.distance!=null)!==(r.reglage!=null)); // l'un des deux champs est renseigné, pas l'autre
+  const warnIncomplete = incomplete.length? `<div class="hint" style="margin-bottom:10px;color:var(--warn)">⚠ ${incomplete.length} réglage(s) incomplet(s) (distance ou réglage manquant) ignoré(s) dans la courbe — complète les deux champs pour qu'ils comptent.</div>` : '';
+  if(!pts.length) return warnIncomplete+`<div class="hint">Ajoute au moins un couple distance/réglage complet pour générer une courbe.</div>`;
+  const groups={ Salle: pts.filter(p=>p.condition==='Salle'), 'Extérieur': pts.filter(p=>p.condition==='Extérieur') };
+  const colors={ Salle:'#5FB8D6', 'Extérieur':'#F2C14E' };
+  const singlePointNotes = Object.entries(groups).filter(([,g])=>g.length===1)
+    .map(([label])=>`<div class="hint">Un seul réglage complet en <b>${label}</b> — ajoutes-en un second pour tracer une courbe sur cette condition (ce point s'affiche seul en attendant).</div>`).join("");
+  const allX=pts.map(p=>p.distance), allY=pts.map(p=>p.reglage);
+  let minX=Math.min(...allX), maxX=Math.max(...allX), minY=Math.min(...allY), maxY=Math.max(...allY);
+  if(minX===maxX){ minX-=5; maxX+=5; }
+  if(minY===maxY){ minY-=1; maxY+=1; }
+  const padX=(maxX-minX)*0.15, padY=(maxY-minY)*0.2;
+  const dispMinX=Math.max(0,minX-padX), dispMaxX=maxX+padX, dispMinY=minY-padY, dispMaxY=maxY+padY;
+  const W=100,H=56,pad=9;
+  const sx=x=>pad+(x-dispMinX)/(dispMaxX-dispMinX)*(W-2*pad);
+  const sy=y=>H-pad-(y-dispMinY)/(dispMaxY-dispMinY)*(H-2*pad);
+  let svg=`<line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#334340" stroke-width="0.4"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H-pad}" stroke="#334340" stroke-width="0.4"/>`;
+  Object.entries(groups).forEach(([label,gpts])=>{
+    if(!gpts.length) return;
+    const fitPts=gpts.map(p=>({x:p.distance,y:p.reglage}));
+    const gminX=Math.min(...fitPts.map(p=>p.x)), gmaxX=Math.max(...fitPts.map(p=>p.x));
+    let coeffs=fitPts.length>=3?polyFit(fitPts,2):null;
+    if(!coeffs && fitPts.length>=2) coeffs=polyFit(fitPts,1);
+    if(coeffs){
+      const ext=Math.max(5,(gmaxX-gminX)*0.25);
+      const domMin=Math.max(0,gminX-ext), domMax=gmaxX+ext, steps=30;
+      let d='';
+      for(let i=0;i<=steps;i++){
+        const x=domMin+(domMax-domMin)*i/steps, y=evalPoly(coeffs,x);
+        d+=(i===0?'M':'L')+round(sx(x),2)+' '+round(sy(y),2)+' ';
+      }
+      svg+=`<path d="${d}" fill="none" stroke="${colors[label]}" stroke-width="0.8" stroke-dasharray="2,1.4" opacity="0.85"/>`;
+    }
+    gpts.forEach(p=>{ svg+=`<circle cx="${round(sx(p.distance),2)}" cy="${round(sy(p.reglage),2)}" r="1.7" fill="${colors[label]}" stroke="#0b0f0e" stroke-width="0.35"/>`; });
+  });
+  const legend=Object.entries(groups).filter(([,g])=>g.length).map(([label])=>`<span><i style="background:${colors[label]}"></i>${label}</span>`).join('');
+  return warnIncomplete+`<svg class="chart" viewBox="0 0 ${W} ${H}" style="height:180px;width:100%">${svg}</svg>
+    <div class="tlegend" style="margin-top:8px">${legend}</div>
+    ${singlePointNotes}
+    <div class="subnote">Courbe indicative en pointillés, ajustée sur tes propres réglages (régression quadratique dès 3 points par condition, linéaire à partir de 2). Extrapolation prudente au-delà de tes distances déjà réglées — vérifie toujours en conditions réelles, notamment avec du vent.</div>`;
+}
+function viseurReglagesTableHTML(v){
+  const rows=v.reglages||[];
+  if(!rows.length) return `<div class="hint">Aucun réglage enregistré.</div>`;
+  const sorted=[...rows].sort((a,b)=>(a.condition||'').localeCompare(b.condition||'')||(a.distance-b.distance));
+  return `<div class="slist">`+sorted.map(r=>`
+    <div class="volee-row" style="align-items:center">
+      <div class="arrows" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <b class="mono">${r.distance!=null?r.distance+' m':'—'} <span class="tag" style="margin-left:6px">${esc(r.condition||'')}</span></b>
+        ${r.vent?`<span class="hint">Vent : ${esc(r.vent)}</span>`:''}
+      </div>
+      <span class="tot mono" style="color:var(--gold)">${r.reglage!=null?r.reglage:'—'}</span>
+    </div>`).join("")+`</div>`;
+}
+
+let VISEUR_FORM=null, VISEUR_PHOTO_PENDING=null, VISEUR_REGLAGES_PENDING=[], VISEUR_EDIT_ID=null;
+function openViseurForm(id){
+  const v = id? S.materiel.viseurs.find(x=>x.id===id) : null;
+  VISEUR_FORM = { nom:v?v.nom:'', type:v?v.type:VISEUR_TYPES[0], grossissement:v?v.grossissement:'', typeVerre:v?v.typeVerre:'', commentaire:v?v.commentaire:'' };
+  VISEUR_PHOTO_PENDING = v&&v.photo? v.photo : null;
+  VISEUR_REGLAGES_PENDING = v&&v.reglages? JSON.parse(JSON.stringify(v.reglages)) : [];
+  VISEUR_EDIT_ID = id||null;
+  renderViseurFormModal();
+}
+function snapshotViseurSimpleFields(){
+  const g=sel=>{ const el=$(sel); return el?el.value:null; };
+  let x;
+  if((x=g("#viseur-nom"))!=null) VISEUR_FORM.nom=x;
+  if((x=g("#viseur-type"))!=null) VISEUR_FORM.type=x;
+  if((x=g("#viseur-gross"))!=null) VISEUR_FORM.grossissement=x;
+  if((x=g("#viseur-verre"))!=null) VISEUR_FORM.typeVerre=x;
+  if((x=g("#viseur-commentaire"))!=null) VISEUR_FORM.commentaire=x;
+}
+function addReglageRow(){ snapshotViseurSimpleFields(); VISEUR_REGLAGES_PENDING.push({id:uid(),distance:null,condition:'Salle',vent:'',reglage:null}); renderViseurFormModal(); }
+function removeReglageRow(i){ snapshotViseurSimpleFields(); VISEUR_REGLAGES_PENDING.splice(i,1); renderViseurFormModal(); }
+function handleViseurPhoto(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  resizeImageToDataURL(file,360,url=>{
+    VISEUR_PHOTO_PENDING=url;
+    const prev=$("#viseur-photo-preview"); if(prev) prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  });
+}
+function renderViseurFormModal(){
+  const editing=!!VISEUR_EDIT_ID;
+  const rows=VISEUR_REGLAGES_PENDING.map((r,i)=>{
+    const incomplete = (r.distance!=null) !== (r.reglage!=null); // un seul des deux champs rempli
+    return `
+    <div style="border-left:3px solid ${incomplete?'#F2C14E':'transparent'};padding-left:${incomplete?'8px':'0'};margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;align-items:end;gap:8px">
+        <div class="field"><label>Distance (m)</label><input type="number" step="1" value="${r.distance!=null?r.distance:''}" oninput="VISEUR_REGLAGES_PENDING[${i}].distance=this.value?parseFloat(this.value):null"></div>
+        <div class="field"><label>Condition</label><select onchange="VISEUR_REGLAGES_PENDING[${i}].condition=this.value">${CONDITIONS_TIR.map(c=>`<option ${r.condition===c?'selected':''}>${c}</option>`).join("")}</select></div>
+        <div class="field"><label>Vent (optionnel)</label><input value="${esc(r.vent||'')}" placeholder="Ex. 3 face" oninput="VISEUR_REGLAGES_PENDING[${i}].vent=this.value"></div>
+        <div class="field"><label>Réglage</label><input type="number" step="0.01" value="${r.reglage!=null?r.reglage:''}" oninput="VISEUR_REGLAGES_PENDING[${i}].reglage=this.value?parseFloat(this.value):null"></div>
+        <button class="btn danger sm" style="height:42px" onclick="removeReglageRow(${i})">✕</button>
+      </div>
+      ${incomplete?'<div style="font-size:11px;color:var(--gold);margin-top:4px">⚠ distance ET réglage requis pour que ce point apparaisse sur la courbe</div>':''}
+    </div>`;
+  }).join("");
+  modal(`
+    <h3>${editing?'Modifier le viseur':'Nouveau viseur'}</h3>
+    <div class="grid" style="gap:14px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div id="viseur-photo-preview" style="width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--panel2);flex:0 0 auto;display:flex;align-items:center;justify-content:center">
+          ${VISEUR_PHOTO_PENDING?`<img src="${VISEUR_PHOTO_PENDING}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:26px">🎯</span>'}
+        </div>
+        <label class="btn sm" style="cursor:pointer">Photo<input type="file" accept="image/*" style="display:none" onchange="handleViseurPhoto(event)"></label>
+      </div>
+      <div class="field"><label>Nom du viseur</label><input id="viseur-nom" value="${esc(VISEUR_FORM.nom)}" placeholder="Ex. Shibuya Ultima"></div>
+      <div class="formgrid">
+        <div class="field"><label>Type de viseur</label><select id="viseur-type">${VISEUR_TYPES.map(t=>`<option ${VISEUR_FORM.type===t?'selected':''}>${t}</option>`).join("")}</select></div>
+        <div class="field"><label>Grossissement</label><input id="viseur-gross" value="${esc(VISEUR_FORM.grossissement)}" placeholder="Ex. 4x"></div>
+      </div>
+      <div class="field"><label>Type de verre</label><input id="viseur-verre" value="${esc(VISEUR_FORM.typeVerre)}" placeholder="Ex. loupe, fibre optique, plat…"></div>
+      <div class="field"><label>Commentaire / annotations</label><textarea id="viseur-commentaire" rows="2" placeholder="Notes libres…">${esc(VISEUR_FORM.commentaire)}</textarea></div>
+      <div class="divider" style="margin:4px 0"></div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">Réglages par distance</div>
+        <div class="hint" style="margin-bottom:10px">Remplis distance ET réglage pour chaque ligne — un point avec un seul des deux champs n'apparaît pas sur la courbe. Il faut au moins 2 points dans la même condition (Salle ou Extérieur) pour tracer une courbe.</div>
+        ${rows || '<div class="hint" style="margin-bottom:10px">Aucun réglage — ajoute tes distances réglementaires (salle et extérieur), avec le vent le cas échéant.</div>'}
+        <button class="btn sm" onclick="addReglageRow()">+ Ajouter une distance</button>
+      </div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:space-between">
+      ${editing?`<button class="btn danger sm" onclick="deleteViseur('${VISEUR_EDIT_ID}')">Supprimer</button>`:'<span></span>'}
+      <div class="btnrow">
+        <button class="btn ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn primary" onclick="saveViseur()">Enregistrer</button>
+      </div>
+    </div>`);
+}
+function saveViseur(){
+  snapshotViseurSimpleFields();
+  const nom=VISEUR_FORM.nom.trim();
+  if(!nom){ toast("Donne un nom à ce viseur"); return; }
+  const incomplete = VISEUR_REGLAGES_PENDING.filter(r=>(r.distance!=null)!==(r.reglage!=null)).length;
+  const reglages=VISEUR_REGLAGES_PENDING.filter(r=>r.distance!=null||r.reglage!=null).map(r=>({id:r.id||uid(),distance:r.distance,condition:r.condition||'Salle',vent:(r.vent||'').trim(),reglage:r.reglage}));
+  const data={ nom, type:VISEUR_FORM.type, grossissement:VISEUR_FORM.grossissement.trim(), typeVerre:VISEUR_FORM.typeVerre.trim(), commentaire:VISEUR_FORM.commentaire.trim(), photo:VISEUR_PHOTO_PENDING, reglages };
+  let finalId;
+  if(VISEUR_EDIT_ID){ Object.assign(S.materiel.viseurs.find(x=>x.id===VISEUR_EDIT_ID),data); finalId=VISEUR_EDIT_ID; }
+  else { data.id=uid(); S.materiel.viseurs.push(data); finalId=data.id; }
+  S.ui.viseurDetailId=finalId;
+  saveState(); closeModal();
+  toast(incomplete>0 ? `Viseur enregistré — ${incomplete} réglage(s) incomplet(s) absent(s) de la courbe` : "Viseur enregistré");
+  renderMateriel();
+}
+function deleteViseur(id){
+  modal(`<h3>Supprimer ce viseur ?</h3><p class="hint">Tous ses réglages enregistrés seront perdus.</p>
+    <div class="btnrow" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" onclick="openViseurForm('${id}')">Annuler</button>
+      <button class="btn danger" onclick="confirmDeleteViseur('${id}')">Supprimer</button></div>`);
+}
+function confirmDeleteViseur(id){
+  S.materiel.viseurs=S.materiel.viseurs.filter(x=>x.id!==id);
+  S.ui.viseurDetailId=null;
+  saveState(); closeModal(); toast("Viseur supprimé"); renderMateriel();
+}
+
+/* ---------- PROFIL / DONNÉES ---------- */
+function openSettings(){
+  const p=S.profile;
+  modal(`<h3>Profil archer</h3>
+    <div class="field"><label>Nom</label><input id="pf-nom" value="${esc(p.nom)}"></div>
+    <div class="formgrid" style="margin-top:12px">
+      <div class="field"><label>Arc principal</label><select id="pf-arc">${ARCS.map(a=>`<option ${a===p.arc?'selected':''}>${a}</option>`).join("")}</select></div>
+      <div class="field"><label>Latéralité</label><select id="pf-main"><option ${p.main==='Droitier'?'selected':''}>Droitier</option><option ${p.main==='Gaucher'?'selected':''}>Gaucher</option></select></div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeModal()">Fermer</button>
+      <button class="btn primary" onclick="saveProfile()">Enregistrer</button></div>
+    <div class="divider"></div>
+    <div class="hint">Sagitta v${VERSION} « ${CODENAME} » — carnet autonome, tes données restent sur ton appareil.</div>`);
+}
+function saveProfile(){ S.profile.nom=$("#pf-nom").value.trim()||"Archer"; S.profile.arc=$("#pf-arc").value; S.profile.main=$("#pf-main").value; saveState(); closeModal(); toast("Profil enregistré"); }
+
+function openData(){
+  modal(`<h3>Données & sauvegarde</h3>
+    <div class="hint" style="margin-bottom:16px">${STORAGE_OK?"Tes séances sont sauvegardées automatiquement sur cet appareil.":"⚠︎ Sauvegarde locale indisponible ici — exporte régulièrement en JSON pour ne rien perdre."}</div>
+    <div class="btnrow" style="flex-direction:column">
+      <button class="btn" onclick="exportJSON()" style="justify-content:center">⬇︎ Exporter tout (JSON — sauvegarde complète)</button>
+      <button class="btn" onclick="exportCSV()" style="justify-content:center">⬇︎ Exporter les séances (CSV)</button>
+      <label class="btn" style="justify-content:center;cursor:pointer">⬆︎ Importer un JSON<input type="file" accept="application/json" style="display:none" onchange="importJSON(event)"></label>
+    </div>
+    <div class="divider"></div>
+    <button class="btn danger" style="width:100%;justify-content:center" onclick="resetAll()">Tout effacer</button>`);
+}
+function exportJSON(){ dl(JSON.stringify(S,null,2),`sagitta-${new Date().toISOString().slice(0,10)}.json`,"application/json"); toast("Export JSON généré"); }
+function exportCSV(){
+  const rows=[["date","discipline","distance_m","arc","blason_cm","cotation","fleches","total","moyenne_fl","taux10_pct","X","tauxX_pct","groupement_cm","mrad","rating_estime","PIM_dist_cm","score_potentiel_gain","clicker_s"]];
+  [...S.seances].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(se=>{
+    const st=seanceStats(se);
+    rows.push([se.date,se.discipline,se.distance,se.arcType,se.blasonCm,se.scoring,st.n,st.total,round(st.avg,3),round(st.tenRate,1),st.xs,round(st.xRate,1),st.disp?round(st.disp.rmean,2):"",st.disp&&st.disp.angMrad!=null?round(st.disp.angMrad,2):"",st.disp&&st.disp.ratingH!=null?round(st.disp.ratingH,1):"",st.disp?round(st.disp.dCenter,2):"",st.disp?st.disp.gain:"",se.clickerTime||""]);
+  });
+  const csv=rows.map(r=>r.map(c=>{const s=(""+c);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\n");
+  dl(csv,`sagitta-seances-${new Date().toISOString().slice(0,10)}.csv`,"text/csv");
+  toast("Export CSV généré");
+}
+function dl(content,name,type){ const b=new Blob([content],{type}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+function importJSON(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const data=JSON.parse(r.result); if(!data.seances) throw 0; S=Object.assign(defaultState(),data); if(!S.ui)S.ui={view:"seances"}; saveState(); closeModal(); toast("Données importées"); setView("seances"); }catch(e){ toast("Fichier invalide"); } };
+  r.readAsText(file);
+}
+function resetAll(){ modal(`<h3>Tout effacer ?</h3><p class="hint">Toutes tes séances seront supprimées définitivement. Pense à exporter d'abord.</p><div class="btnrow" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" onclick="openData()">Annuler</button><button class="btn danger" onclick="doReset()">Effacer</button></div>`); }
+function doReset(){ S=defaultState(); saveState(); closeModal(); toast("Réinitialisé"); setView("seances"); }
+
+/* ---------- DÉMO ---------- */
+function loadDemo(){
+  // séance réaliste tir en salle 18 m, blason 40, groupe légèrement décalé haut-droite
+  const se={ id:uid(), date:new Date().toISOString().slice(0,10), discipline:"Salle 18 m", distance:18, arcType:"Arc classique", blasonCm:40, scoring:"10z", flechesParVolee:6, nbVolees:10, note:"Séance de démonstration", volees:[] };
+  const f=faceModel(40,"10z");
+  // biais moyen : +3.2cm droite, +4.5cm haut ; dispersion sd ~3.5cm ; légère fatigue
+  function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  for(let e=0;e<10;e++){
+    const fatigue=e>6?1.5:1; // dispersion augmente en fin
+    const fl=[];
+    for(let a=0;a<6;a++){
+      const x=3.2+gauss()*3.4*fatigue, y=4.5+gauss()*3.4*fatigue;
+      const r=Math.hypot(x,y); const sc=scoreFromRadius(r,40,"10z");
+      fl.push({v:sc.v,isX:sc.isX,x:round(x,2),y:round(y,2)});
+    }
+    fl.sort((a,b)=>b.v-a.v);
+    se.volees.push({fleches:fl});
+  }
+  S.seances.push(se); saveState(); toast("Séance de démonstration ajoutée");
+  openAnalyse(se.id);
+}
+
+/* ---------- ÉVÉNEMENTS ---------- */
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.nav)));
+$("#btnSettings").addEventListener("click",openSettings);
+$("#btnData").addEventListener("click",openData);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+/* ---------- INIT ---------- */
+setView(S.ui.view||"seances");
+</script>
+</body>
+</html>
