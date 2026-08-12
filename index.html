@@ -403,7 +403,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
 <script>
 "use strict";
 /* ============================================================
-   SAGITTA — v2.0.11 « GreenArrow »
+   SAGITTA — v2.1.1 « GreenArrow »
    Carnet de performance & coaching au tir à l'arc
    Fichier unique HTML/JS · persistance localStorage · export JSON/CSV
 
@@ -415,7 +415,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
          fréquent ; roule vers Y+1 quand Z dépasserait 12
    - CodeName = mémo de période de développement, ne change qu'avec X
    ============================================================ */
-const VERSION = "2.0.11";
+const VERSION = "2.1.1";
 const CODENAME = "GreenArrow";
 const LSKEY = "sagitta.v1";
 
@@ -436,6 +436,58 @@ function saveState(){
 /* ---------- état ---------- */
 const DISCIPLINES = ["Salle 18 m","Extérieur (TAE)","Fédéral","Campagne","3D","Beursault","Entraînement libre"];
 const ARCS = ["Arc classique","Arc à poulies","Arc nu (barebow)","Arc droit / longbow"];
+
+/* ============================================================
+   BASE D'EXERCICES — sourcée WA Coaching Manual, WA Beginners Manual,
+   CDArc77 fiches ludiques, Hattila
+   ============================================================ */
+const EX_CATS = ["Technique","Précision & groupement","Renforcement physique","Mental & rythme","Jeux & ludique"];
+const EXERCICES = [
+// --- Technique (phases du cycle de tir) — WA Coach's Manual ch.6 ---
+{id:"t01",cat:"Technique",nom:"Position des pieds & stabilité",desc:"Travailler la position ouverte/fermée/neutre et la répartition du poids sur les appuis. Se sentir ancré et stable avant de lever l'arc.",obj:"Stabilité posturale reproductible",src:"WA Coach's Manual 6.1"},
+{id:"t02",cat:"Technique",nom:"Pré-positionnement du corps",desc:"Dos plat, épaules basses, poitrine aplatie, centre de gravité bas. Vérifier la verticalité du torse et l'alignement épaules-hanches-pieds.",obj:"Base corporelle identique à chaque flèche",src:"WA Coach's Manual 6.5"},
+{id:"t03",cat:"Technique",nom:"Main de corde & prise de corde",desc:"Corde profonde dans les phalanges, dos de main plat et vertical, poignet relâché. 3 doigts répartissent la pression également.",obj:"Décoche propre et régulière",src:"WA Coach's Manual 6.3"},
+{id:"t04",cat:"Technique",nom:"Main d'arc & position dans la poignée",desc:"Pression dans le V pouce-index, doigts relâchés, poignet neutre. Pas de serrage — utiliser une dragonne.",obj:"Éliminer le torque sur l'arc",src:"WA Coach's Manual 6.4"},
+{id:"t05",cat:"Technique",nom:"Élévation synchronisée",desc:"Monter les deux mains ensemble à hauteur du nez, épaules basses, flèche parallèle au sol. L'épaule d'arc reste la plus basse possible.",obj:"Pré-position haute identique et sans tension",src:"WA Coach's Manual 6.6 / WA Beginners Flèche Blanche"},
+{id:"t06",cat:"Technique",nom:"Allonge dans le plan de tir",desc:"Tirer la corde dans le plan vertical de la flèche, main de corde vers le visage (pas le menton vers la corde). Torse immobile.",obj:"Allonge constante et rectiligne",src:"WA Coach's Manual 6.8"},
+{id:"t07",cat:"Technique",nom:"Repères faciaux & ancrage",desc:"Trouver et reproduire ses points de contact au visage (menton, lèvres, nez sur la corde). Tester les 3 méthodes : ligne droite, triangle, quadrilatère.",obj:"Ancrage identique à chaque flèche",src:"WA Coach's Manual 6.9 / WA Beginners Flèche Bleue"},
+{id:"t08",cat:"Technique",nom:"Expansion à pleine allonge (draw expansion)",desc:"Maintenir une micro-extension continue des omoplates vers la colonne. La pointe de flèche ne recule pas — ou avance imperceptiblement.",obj:"Stabilité et continuité avant la décoche",src:"WA Coach's Manual 6.10"},
+{id:"t09",cat:"Technique",nom:"Décoche & suivi (follow-through)",desc:"La main de corde file le long de la mâchoire ou du cou. Le bras d'arc reste en direction de la cible. Aucun signe avant-coureur du tir. Visage impassible.",obj:"Décoche subconsciente, pas de rupture",src:"WA Coach's Manual 6.12/6.14 / WA Beginners Flèche Rouge"},
+{id:"t10",cat:"Technique",nom:"Passage de corde (string clearance)",desc:"Vérifier le dégagement de la corde au bras d'arc et à la poitrine. Test du pont de bande adhésive (2 mm surélevé) puis tir d'une flèche.",obj:"Aucun contact parasite de la corde",src:"WA Coach's Manual 6.13 / WA Beginners Flèche Jaune"},
+{id:"t11",cat:"Technique",nom:"Alignement corde-avant-bras-flèche",desc:"À pleine allonge, l'avant-bras de corde doit être dans le plan vertical de la flèche. Position qui minimise l'effort et favorise la détente.",obj:"Alignement biomécanique optimal",src:"WA Coach's Manual 6.9 / WA Beginners Flèche Bleue"},
+// --- Précision & groupement — Hattila + WA ---
+{id:"p01",cat:"Précision & groupement",nom:"Tir sans blason (sur paille)",desc:"Tirer sur un réceptacle nu — paille ou mousse — sans rien à viser. Se concentrer uniquement sur le geste, pas le résultat. L'oeilleton navigue librement.",obj:"Focalisation sur le geste, pas la visée",src:"Hattila — Travailler sans blason"},
+{id:"p02",cat:"Précision & groupement",nom:"Tir sur visuel large",desc:"Remplacer le blason par un visuel de grande taille (cercle de 30 cm, post-it…). Pas une contrainte de précision — juste un repère lâche.",obj:"Transition paille → cible sans pression",src:"Hattila — Travailler sans blason"},
+{id:"p03",cat:"Précision & groupement",nom:"Tir rapproché progressif",desc:"Commencer à 5-6 m, blason taille standard. Tir compté. Objectif atteint → reculer de quelques mètres. Répéter jusqu'à la distance officielle.",obj:"S'habituer à toucher sa zone, prendre confiance",src:"Hattila — S'habituer à toucher sa zone"},
+{id:"p04",cat:"Précision & groupement",nom:"Contrevisée",desc:"Dérégler volontairement le viseur, observer où tombe la flèche, puis contreviser pour la ramener au centre sans toucher au viseur.",obj:"Anticiper la trajectoire, gérer le vent",src:"Hattila — Apprendre à contreviser"},
+{id:"p05",cat:"Précision & groupement",nom:"Hit or Miss (touché/raté)",desc:"Volée de 3 flèches — ne pas compter les points, seulement 1 point par flèche dans la zone cible (9-10 par ex.). Se détacher du score brut.",obj:"Se concentrer sur la régularité, pas le score",src:"Hattila — Hit or Miss"},
+{id:"p06",cat:"Précision & groupement",nom:"Blason asymétrique (Differential Learning)",desc:"Tirer sur un blason asymétrique ou inhabituel. Compter les points normalement — une autre façon de performer.",obj:"Adaptabilité et concentration visuelle",src:"Hattila — Blasons différents"},
+{id:"p07",cat:"Précision & groupement",nom:"Tir yeux fermés (à 3 m)",desc:"À très courte distance, tirer avec les yeux fermés sur un réceptacle nu. Développer les sensations kinesthésiques du geste sans retour visuel.",obj:"Conscience corporelle et reproductibilité du geste",src:"WA Coach's Manual 6.9 / WA Beginners Flèche Bleue"},
+// --- Renforcement physique — WA ch.11 + Hattila ---
+{id:"r01",cat:"Renforcement physique",nom:"Temps de tenue (holding)",desc:"Tenir à pleine allonge (sous clicker ou non) pendant X secondes avant de décocher. Augmenter progressivement (10s, 15s, 20s…).",obj:"Endurance musculaire à pleine allonge",src:"Hattila — Top chrono / WA Coach's Manual 11.4.6.5"},
+{id:"r02",cat:"Renforcement physique",nom:"Volume chronométré (burst)",desc:"X flèches en Y secondes. Enchaîner les flèches rapidement pour augmenter le volume et travailler le physique. Rapprocher la cible.",obj:"Renforcement musculaire spécifique",src:"Hattila — Top chrono / WA Coach's Manual 11.4.6.4"},
+{id:"r03",cat:"Renforcement physique",nom:"Tir avec élastique (rubber band)",desc:"Arc monté avec une corde élastique ou bande de résistance. Permet de travailler toutes les phases sans effort excessif, y compris décocher à vide.",obj:"Échauffement orienté et renforcement doux",src:"WA Coach's Manual 11.1.5 / WA Beginners Flèche Noire"},
+{id:"r04",cat:"Renforcement physique",nom:"Renforcement avec surcharge",desc:"Ajouter du poids à l'arc (stabilisateur lourd) ou augmenter la puissance des branches pour des séries courtes de renforcement.",obj:"Force spécifique de tir",src:"WA Coach's Manual 11.4.6.1/11.4.6.2"},
+{id:"r05",cat:"Renforcement physique",nom:"Échauffement complet",desc:"Cardio léger (5 min), mouvements articulaires (épaules, coudes, poignets, cou), étirements, puis tir de chauffe sur paille.",obj:"Prévention des blessures, montée en température",src:"WA Coach's Manual 11.1 / Hattila — Échauffement"},
+// --- Mental & rythme — Hattila + WA ---
+{id:"m01",cat:"Mental & rythme",nom:"Découpage de la stratégie de tir",desc:"Écrire sur un carnet toutes les étapes de sa séquence de tir. Les transformer en mots-clés personnels (ex. « placement », « en ligne », « lâcher »).",obj:"Conscience et reproductibilité du processus de tir",src:"Hattila — Découper votre tir"},
+{id:"m02",cat:"Mental & rythme",nom:"Travail au miroir",desc:"Tirer à 5-10 m face à un miroir posé de biais. Observer en temps réel les contacts au visage, le placement des épaules, la décoche.",obj:"Correction visuelle en direct du geste",src:"Hattila — Le miroir / WA Beginners Flèche Noire"},
+{id:"m03",cat:"Mental & rythme",nom:"Auto-vidéo",desc:"Se filmer au smartphone pendant un tir. Analyser au ralenti : rythme, position, décoche, suivi. Comparer entre séances.",obj:"Feedback objectif et suivi de progression",src:"Hattila — La vidéo"},
+{id:"m04",cat:"Mental & rythme",nom:"Rythme au chrono (métronome)",desc:"Mesurer et stabiliser le temps par flèche et le temps de récupération entre flèches. Viser la régularité du rythme, pas la vitesse.",obj:"Devenir un métronome imperturbable",src:"Hattila — Rythmer son tir"},
+{id:"m05",cat:"Mental & rythme",nom:"Séquence de tir complète (routine)",desc:"Répéter fidèlement toutes les étapes du tir dans l'ordre, avec un temps constant (+/- 10 s). Le tir doit prendre l'observateur par surprise.",obj:"Automatisation de la routine de tir",src:"WA Beginners Flèche Jaune / WA Coach's Manual 6.14"},
+// --- Jeux & ludique — CDArc77 + WA ch.12 ---
+{id:"j01",cat:"Jeux & ludique",nom:"Morpion à l'arc",desc:"Grille 3×3 sur la cible. Deux archers s'affrontent : chaque flèche dans une case = prise de la case. Premier alignement de 3 gagne.",obj:"Précision ciblée + aspect ludique",src:"CDArc77 — Échauffement Morpion"},
+{id:"j02",cat:"Jeux & ludique",nom:"Jeu du Géomètre",desc:"Former des figures géométriques sur la cible avec ses flèches (triangle, carré, ligne…). Points bonus si la figure est régulière.",obj:"Contrôle du placement des flèches",src:"CDArc77 — Jeu du Géomètre"},
+{id:"j03",cat:"Jeux & ludique",nom:"Jeu du Hérisson",desc:"Planter un maximum de flèches dans la plus petite zone possible. Plus c'est groupé, plus le hérisson est réussi.",obj:"Groupement maximal",src:"CDArc77 — Jeu du Hérisson"},
+{id:"j04",cat:"Jeux & ludique",nom:"Jeu du Poker",desc:"Chaque zone de la cible correspond à une carte. Constituer la meilleure main de poker avec ses flèches.",obj:"Stratégie de placement + fun",src:"CDArc77 — Jeu du Poker"},
+{id:"j05",cat:"Jeux & ludique",nom:"Mario Kart",desc:"Parcours de tir avec des « items » (zones spéciales sur la cible). Toucher un item active un bonus ou un malus pour l'adversaire.",obj:"Compétition ludique entre archers",src:"CDArc77 — Jeu du Mario Kart"},
+{id:"j06",cat:"Jeux & ludique",nom:"T'éclates tu perds",desc:"Des ballons sont fixés sur la cible. Chaque ballon éclaté = pénalité. Il faut placer ses flèches sans toucher les ballons.",obj:"Précision d'évitement",src:"CDArc77 — T'éclates tu perds"},
+{id:"j07",cat:"Jeux & ludique",nom:"Jeu de Cupidon",desc:"Cibles en forme de cœur à différentes distances. Toucher le cœur = point. Exercice festif pour les jeunes.",obj:"Précision ludique",src:"CDArc77 — Jeu de Cupidon"},
+{id:"j08",cat:"Jeux & ludique",nom:"300 (WA Game)",desc:"Objectif : totaliser 300 points en un minimum de flèches. Chaque flèche compte. Si une flèche rate, elle pénalise le total.",obj:"Pression de performance ludique",src:"WA Coach's Manual ch.12 — 300"},
+{id:"j09",cat:"Jeux & ludique",nom:"Robin Hood",desc:"Tenter de planter sa flèche le plus près possible d'une flèche déjà en cible. Proximité maximale = victoire.",obj:"Groupement extrême et contrôle",src:"WA Coach's Manual ch.12 — Robin Hood"},
+{id:"j10",cat:"Jeux & ludique",nom:"Spider in the Net",desc:"Grille dessinée sur la cible. Toucher les intersections. Chaque intersection touchée = point, chaque fil touché = pénalité.",obj:"Précision fine et concentration",src:"WA Coach's Manual ch.12 — Spider in the Net"},
+];
+
 function defaultState(){
   return {
     version:VERSION,
@@ -443,13 +495,16 @@ function defaultState(){
     objectif:{ moyenneCible:null, note:"" },
     seances:[],
     materiel:{ arcs:[], fleches:[], viseurs:[] },
-    ui:{ view:"seances", activeSeanceId:null, analyseId:null, materielTab:"arcs", viseurDetailId:null }
+    ui:{ view:"seances", activeSeanceId:null, analyseId:null, materielTab:"arcs", viseurDetailId:null, seanceTab:"resume" }
   };
 }
 let S = loadState() || defaultState();
 if(!S.ui) S.ui = {view:"seances",activeSeanceId:null,analyseId:null};
 if(!S.ui.materielTab) S.ui.materielTab="arcs";
+if(!S.ui.seanceTab) S.ui.seanceTab="resume";
 if(!S.materiel) S.materiel={arcs:[],fleches:[],viseurs:[]};
+// migration : ajouter exercices[] aux séances existantes
+S.seances.forEach(se=>{ if(!se.exercices) se.exercices=[]; });
 if(!STORAGE_OK) document.getElementById('preview-banner').classList.remove('hidden');
 
 /* ---------- utilitaires ---------- */
@@ -650,7 +705,7 @@ function renderSeances(){
         <div class="day"><div class="d">${dd.d}</div><div class="m">${dd.m}</div></div>
         <div class="meta">
           <div class="t">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div>
-          <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${done} flèches ${st.disp?"· 🎯 tracé":""}</div>
+          <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${done} flèches ${st.disp?"· 🎯 tracé":""}${(se.exercices||[]).length?` · 🏋 ${se.exercices.length} exo`:""}</div>
         </div>
         <div class="sc"><div class="big">${st.total}</div><div class="avg">${round(st.avg,2)}/flèche</div></div>
       </button>`;
@@ -762,28 +817,73 @@ function renderSaisie(){
     el.innerHTML=`<div class="empty"><h3>Aucune séance active</h3><p>Crée ou ouvre une séance pour saisir tes volées.</p><button class="btn primary" style="margin-top:12px" onclick="newSeance()">Nouvelle séance</button></div>`;
     return;
   }
-  if(S.ui.inputMode==null) S.ui.inputMode="pointer";
-  const mode=S.ui.inputMode;
+  if(!se.exercices) se.exercices=[];
+  const tab=S.ui.seanceTab||"resume";
   const st=seanceStats(se);
-  const fpv=se.flechesParVolee;
-  const done=se.volees.length;
-
   el.innerHTML=`
     <div class="section-head">
-      <div><div class="eyebrow">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div><h2>Saisie · volée ${done+1}/${se.nbVolees}</h2></div>
-      <button class="btn ghost sm" onclick="openAnalyse('${se.id}')">Voir l'analyse →</button>
+      <div><div class="eyebrow">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div><h2>Séance du ${fmtDate(se.date)}</h2></div>
+      <button class="btn ghost sm" onclick="openAnalyse('${se.id}')">Analyse →</button>
     </div>
+    <div class="pills" style="margin-bottom:16px">
+      <button class="pill ${tab==='resume'?'on':''}" onclick="setSeanceTab('resume')">📋 Résumé</button>
+      <button class="pill ${tab==='tirs'?'on':''}" onclick="setSeanceTab('tirs')">🎯 Tirs comptés</button>
+      <button class="pill ${tab==='exercices'?'on':''}" onclick="setSeanceTab('exercices')">🏋 Exercices</button>
+      <button class="pill ${tab==='bilan'?'on':''}" onclick="setSeanceTab('bilan')">📊 Bilan</button>
+    </div>
+    <div id="seance-tab-content"></div>
+  `;
+  const container=document.getElementById('seance-tab-content');
+  if(tab==='resume') container.innerHTML=renderSeanceResume(se,st);
+  else if(tab==='tirs') { container.innerHTML=renderSeanceTirs(se,st); attachTargetHandlers(se); setupZoomPan(); }
+  else if(tab==='exercices') container.innerHTML=renderSeanceExercices(se);
+  else if(tab==='bilan') container.innerHTML=renderSeanceBilan(se,st);
+}
+function setSeanceTab(t){ S.ui.seanceTab=t; saveState(); renderSaisie(); }
 
+/* --- Onglet 1 : Résumé --- */
+function renderSeanceResume(se,st){
+  const done=se.volees.length, exDone=se.exercices.length;
+  return `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:12px">Informations de la séance</div>
+      <div class="formgrid">
+        <div><span class="hint">Date</span><br><b>${fmtDate(se.date)}</b></div>
+        <div><span class="hint">Discipline</span><br><b>${esc(se.discipline)}</b></div>
+        <div><span class="hint">Distance</span><br><b>${se.distance||'—'} m</b></div>
+        <div><span class="hint">Arc</span><br><b>${esc(arcLabel(se))}</b></div>
+        <div><span class="hint">Flèches</span><br><b>${flecheLabel(se)||'—'}</b></div>
+        <div><span class="hint">Blason</span><br><b>Ø ${se.blasonCm} cm</b></div>
+      </div>
+      ${se.note?`<div class="subnote" style="margin-top:14px;color:var(--ink)">"${esc(se.note)}"</div>`:''}
+    </div>
+    <div class="metrics" style="margin-top:14px">
+      <div class="metric"><div class="lab">Volées comptées</div><div class="val">${done}<small>/${se.nbVolees}</small></div></div>
+      <div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+      <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>
+      <div class="metric"><div class="lab">Exercices réalisés</div><div class="val">${exDone}</div></div>
+    </div>
+    <div class="btnrow" style="margin-top:16px">
+      <button class="btn primary sm" onclick="setSeanceTab('tirs')">🎯 Saisir des tirs</button>
+      <button class="btn sm" onclick="setSeanceTab('exercices')">🏋 Faire un exercice</button>
+      <button class="btn sm danger" onclick="finishSeance()">Terminer la séance</button>
+    </div>`;
+}
+
+/* --- Onglet 2 : Tirs comptés (la saisie existante) --- */
+function renderSeanceTirs(se,st){
+  if(S.ui.inputMode==null) S.ui.inputMode="pointer";
+  const mode=S.ui.inputMode, fpv=se.flechesParVolee, done=se.volees.length;
+  return `
     <div class="panel" style="padding:14px;margin-bottom:14px">
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
         <div class="pills">
           <button class="pill ${mode==='pointer'?'on':''}" onclick="setMode('pointer')">🎯 Pointer sur cible</button>
           <button class="pill ${mode==='pad'?'on':''}" onclick="setMode('pad')">⌨︎ Saisie rapide</button>
         </div>
-        <div class="mono" style="color:var(--muted);font-size:13px">Total séance : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl</div>
+        <div class="mono" style="color:var(--muted);font-size:13px">Total : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl · volée ${done+1}/${se.nbVolees}</div>
       </div>
     </div>
-
     <div class="saisie-layout">
       <div class="panel">
         ${mode==='pointer'?targetSVG(se):padHTML(se)}
@@ -796,24 +896,119 @@ function renderSaisie(){
           </div>
         </div>
       </div>
-
       <div class="panel">
         <div class="eyebrow" style="margin-bottom:10px">Volées enregistrées</div>
-        ${done? se.volees.map((v,i)=>voleeRowHTML(v,i)).join("") : '<div class="hint">Aucune volée validée. Saisis tes flèches puis « Valider la volée ».</div>'}
+        ${done? se.volees.map((v,i)=>voleeRowHTML(v,i)).join("") : '<div class="hint">Aucune volée validée.</div>'}
         ${done?`<div class="divider"></div>
           <div style="display:flex;justify-content:space-between" class="mono">
             <span style="color:var(--muted)">Moyenne / volée</span><b>${round(st.total/(se.volees.length||1),1)}</b></div>
           <div style="display:flex;justify-content:space-between;margin-top:4px" class="mono">
             <span style="color:var(--muted)">Taux de X</span><b>${round(st.xRate)} %</b></div>`:''}
-        <div class="btnrow" style="margin-top:16px">
-          <button class="btn sm danger" onclick="finishSeance()">Terminer la séance</button>
-        </div>
       </div>
     </div>
-    <div class="subnote">Astuce : en mode « Pointer », place chaque impact à sa vraie position sur le blason. Sagitta déduit le score automatiquement et débloque l'analyse de groupement, de centrage (PIM) et de score potentiel.</div>
-  `;
-  attachTargetHandlers(se);
-  setupZoomPan();
+    <div class="subnote">En mode « Pointer », place chaque impact sur le blason — Sagitta déduit le score et débloque l'analyse de groupement.</div>`;
+}
+
+/* --- Onglet 3 : Exercices --- */
+function renderSeanceExercices(se){
+  const exDone=se.exercices||[];
+  const logged=exDone.map((ex,i)=>{
+    const ref=EXERCICES.find(e=>e.id===ex.exerciceId);
+    return `<div class="scard" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><b>${ref?esc(ref.nom):'Exercice inconnu'}</b><span class="tag" style="margin-left:8px">${ref?esc(ref.cat):''}</span></div>
+        <button class="btn sm danger" onclick="removeExercice('${se.id}',${i})">✕</button>
+      </div>
+      ${ex.notes?`<div class="hint">${esc(ex.notes)}</div>`:''}
+      <div class="mono" style="font-size:12px;color:var(--muted)">${ex.duree?ex.duree+' min · ':''}${ex.resultat||''}</div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:12px">Exercices réalisés pendant cette séance</div>
+      ${logged||'<div class="hint">Aucun exercice réalisé pour l\'instant.</div>'}
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Ajouter un exercice</div>
+      <div class="field"><label>Catégorie</label><select id="ex-cat" onchange="filterExCatalog()"><option value="">Toutes</option>${EX_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div id="ex-catalog" style="margin-top:12px">${exCatalogHTML('')}</div>
+    </div>`;
+}
+function filterExCatalog(){ const cat=document.getElementById('ex-cat').value; document.getElementById('ex-catalog').innerHTML=exCatalogHTML(cat); }
+function exCatalogHTML(cat){
+  const list=cat?EXERCICES.filter(e=>e.cat===cat):EXERCICES;
+  if(!list.length) return '<div class="hint">Aucun exercice dans cette catégorie.</div>';
+  return `<div class="slist" style="max-height:400px;overflow:auto">`+list.map(e=>`
+    <button class="scard" onclick="startExercice('${e.id}')" style="text-align:left">
+      <div class="meta"><div class="t">${esc(e.nom)}</div>
+        <div class="s"><span class="tag">${esc(e.cat)}</span> ${esc(e.desc).slice(0,90)}…</div></div>
+    </button>`).join('')+`</div>`;
+}
+function startExercice(exId){
+  const ref=EXERCICES.find(e=>e.id===exId);
+  if(!ref) return;
+  modal(`
+    <h3>🏋 ${esc(ref.nom)}</h3>
+    <div class="hint" style="margin-bottom:8px"><span class="tag">${esc(ref.cat)}</span> · ${esc(ref.src)}</div>
+    <p style="margin-bottom:12px;color:var(--ink);line-height:1.6">${esc(ref.desc)}</p>
+    <div class="hint" style="margin-bottom:14px"><b>Objectif :</b> ${esc(ref.obj)}</div>
+    <div class="field"><label>Notes / observations (optionnel)</label><textarea id="ex-notes" rows="2" placeholder="Ce que tu as ressenti, ce que tu as travaillé…"></textarea></div>
+    <div class="formgrid" style="margin-top:12px">
+      <div class="field"><label>Durée (min, optionnel)</label><input type="number" id="ex-duree" min="0" step="1" placeholder="Ex. 15"></div>
+      <div class="field"><label>Résultat / impression</label><input id="ex-resultat" placeholder="Ex. groupement amélioré, 3/5 réussis…"></div>
+    </div>
+    <div class="btnrow" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn primary" onclick="logExercice('${exId}')">Enregistrer l'exercice</button>
+    </div>`);
+}
+function logExercice(exId){
+  const se=S.seances.find(x=>x.id===S.ui.activeSeanceId); if(!se) return;
+  if(!se.exercices) se.exercices=[];
+  se.exercices.push({
+    exerciceId:exId,
+    date:new Date().toISOString(),
+    notes:(document.getElementById('ex-notes').value||'').trim(),
+    duree:document.getElementById('ex-duree').value?parseInt(document.getElementById('ex-duree').value):null,
+    resultat:(document.getElementById('ex-resultat').value||'').trim()
+  });
+  saveState(); closeModal(); toast("Exercice enregistré"); renderSaisie();
+}
+function removeExercice(seId,idx){
+  const se=S.seances.find(x=>x.id===seId); if(!se) return;
+  se.exercices.splice(idx,1); saveState(); renderSaisie();
+}
+
+/* --- Onglet 4 : Bilan --- */
+function renderSeanceBilan(se,st){
+  const D=diagnose(se);
+  const exDone=se.exercices||[];
+  const exSummary=exDone.length? exDone.map(ex=>{const r=EXERCICES.find(e=>e.id===ex.exerciceId); return r?esc(r.nom):'?';}).join(', ') : 'Aucun';
+  return `
+    <div class="metrics">
+      <div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+      <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>
+      <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div></div>
+      <div class="metric"><div class="lab">Flèches tirées</div><div class="val">${st.n}</div></div>
+    </div>
+    ${st.disp?`<div class="metrics" style="margin-top:12px">
+      <div class="metric"><div class="lab">Groupement</div><div class="val">${round(st.disp.rmean)}<small>cm</small></div></div>
+      <div class="metric"><div class="lab">Centrage (PIM)</div><div class="val">${round(st.disp.dCenter)}<small>cm</small></div></div>
+      ${st.disp.angMrad!=null?`<div class="metric"><div class="lab">Déviation</div><div class="val">${round(st.disp.angMrad,1)}<small>mrad</small></div></div>`:''}
+      <div class="metric accent"><div class="lab">Score potentiel</div><div class="val">+${st.disp.gain}<small>pts</small></div></div>
+    </div>`:''}
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:10px">Exercices réalisés</div>
+      <div class="hint">${exSummary}</div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:12px">Diagnostic — forces, faiblesses & axes</div>
+      ${diagListHTML(D)}
+    </div>
+    <div class="btnrow" style="margin-top:16px">
+      <button class="btn sm" onclick="openAnalyse('${se.id}')">Analyse complète →</button>
+      <button class="btn sm danger" onclick="finishSeance()">Terminer la séance</button>
+    </div>`;
 }
 function setMode(m){ S.ui.inputMode=m; saveState(); renderSaisie(); }
 function endStripHTML(fpv){
@@ -1057,19 +1252,48 @@ function finishSeance(){
 function openAnalyse(id){ S.ui.analyseId=id; saveState(); setView("analyse"); }
 function renderAnalyse(){
   const el=$("#view-analyse");
-  const se=S.seances.find(x=>x.id===S.ui.analyseId) || [...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-  if(!se){ el.innerHTML=`<div class="empty"><h3>Rien à analyser</h3><p>Enregistre une séance pour voir l'analyse détaillée.</p><button class="btn primary" style="margin-top:12px" onclick="newSeance()">Nouvelle séance</button></div>`; return; }
+  // --- filtrage ---
+  const filt=S.ui.analyseFilt||{};
+  let pool=[...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(filt.dateFrom) pool=pool.filter(s=>s.date>=filt.dateFrom);
+  if(filt.dateTo) pool=pool.filter(s=>s.date<=filt.dateTo);
+  if(filt.type==='compté') pool=pool.filter(s=>s.volees.length>0);
+  if(filt.type==='exercice') pool=pool.filter(s=>(s.exercices||[]).length>0);
+  if(filt.exerciceId) pool=pool.filter(s=>(s.exercices||[]).some(e=>e.exerciceId===filt.exerciceId));
+  if(filt.arcId) pool=pool.filter(s=>s.arcId===filt.arcId);
+  const se=pool.find(x=>x.id===S.ui.analyseId) || pool[0];
+  if(!se){ el.innerHTML=`<div class="empty"><h3>Rien à analyser</h3><p>Aucune séance ne correspond aux filtres. Ajuste-les ou enregistre une séance.</p><button class="btn primary" style="margin-top:12px" onclick="resetAnalyseFilters()">Réinitialiser les filtres</button></div>`; return; }
   S.ui.analyseId=se.id;
   const D=diagnose(se), st=D.st;
+  const seExos=(se.exercices||[]);
+  const exoNames=seExos.map(ex=>{const r=EXERCICES.find(e=>e.id===ex.exerciceId);return r?esc(r.nom):'?';});
 
-  // sélecteur de séance
-  const opts=[...S.seances].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>`<option value="${s.id}" ${s.id===se.id?'selected':''}>${fmtDate(s.date)} · ${esc(s.discipline)} · ${seanceStats(s).total} pts</option>`).join("");
+  // sélecteur de séance (filtré)
+  const opts=pool.map(s=>`<option value="${s.id}" ${s.id===se.id?'selected':''}>${fmtDate(s.date)} · ${esc(s.discipline)} · ${seanceStats(s).total} pts${(s.exercices||[]).length?' · 🏋':''}
+</option>`).join("");
+
+  // exercices uniques pour le filtre
+  const allExIds=[...new Set(S.seances.flatMap(s=>(s.exercices||[]).map(e=>e.exerciceId)))];
+  const exOpts=allExIds.map(id=>{const r=EXERCICES.find(e=>e.id===id);return r?`<option value="${id}" ${filt.exerciceId===id?'selected':''}>${esc(r.nom)}</option>`:''}).join('');
+  const arcOpts=S.materiel.arcs.map(a=>`<option value="${a.id}" ${filt.arcId===a.id?'selected':''}>${esc(a.nom)}</option>`).join('');
 
   el.innerHTML=`
     <div class="section-head">
       <div><div class="eyebrow">Analyse de séance</div><h2>${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</h2>
-        <div class="hint">${fmtDate(se.date)} · ${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${st.n} flèches</div></div>
-      <div class="field" style="min-width:220px"><label>Séance analysée</label><select onchange="openAnalyse(this.value)">${opts}</select></div>
+        <div class="hint">${fmtDate(se.date)} · ${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${st.n} flèches${seExos.length?' · '+seExos.length+' exercice(s)':''}</div></div>
+      <div class="field" style="min-width:220px"><label>Séance analysée (${pool.length})</label><select onchange="openAnalyse(this.value)">${opts}</select></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px;padding:14px">
+      <div class="eyebrow" style="margin-bottom:10px">Filtrer les séances</div>
+      <div class="formgrid">
+        <div class="field"><label>Du</label><input type="date" value="${filt.dateFrom||''}" onchange="setAnalyseFilter('dateFrom',this.value)"></div>
+        <div class="field"><label>Au</label><input type="date" value="${filt.dateTo||''}" onchange="setAnalyseFilter('dateTo',this.value)"></div>
+        <div class="field"><label>Type</label><select onchange="setAnalyseFilter('type',this.value)"><option value="">Tous</option><option ${filt.type==='compté'?'selected':''} value="compté">Tir compté</option><option ${filt.type==='exercice'?'selected':''} value="exercice">Avec exercice(s)</option></select></div>
+        <div class="field"><label>Exercice</label><select onchange="setAnalyseFilter('exerciceId',this.value)"><option value="">Tous</option>${exOpts}</select></div>
+        ${arcOpts?`<div class="field"><label>Arc</label><select onchange="setAnalyseFilter('arcId',this.value)"><option value="">Tous</option>${arcOpts}</select></div>`:''}
+      </div>
+      <button class="btn ghost sm" style="margin-top:8px" onclick="resetAnalyseFilters()">Réinitialiser</button>
     </div>
 
     <div class="metrics">
@@ -1081,6 +1305,17 @@ function renderAnalyse(){
         : `<div class="metric"><div class="lab">Taux de 10 · X</div><div class="val">${round(st.tenRate)}<small>%</small></div><div class="delta flat">${st.tens} dix · ${st.xs} X</div></div>`}
       ${se.clickerTime?`<div class="metric"><div class="lab">Maintien post-clicker</div><div class="val">${se.clickerTime}<small>s</small></div></div>`:''}
     </div>
+
+    ${seExos.length?`<div class="panel" style="margin-top:14px">
+      <div class="eyebrow" style="margin-bottom:10px">Exercices réalisés pendant cette séance</div>
+      <div class="slist">${seExos.map(ex=>{
+        const r=EXERCICES.find(e=>e.id===ex.exerciceId);
+        return `<div class="volee-row" style="align-items:center"><div class="arrows" style="flex-direction:column;gap:2px">
+          <b style="font-size:14px">${r?esc(r.nom):'?'}</b>
+          <span class="hint">${[r?esc(r.cat):'',ex.duree?ex.duree+' min':'',ex.resultat?esc(ex.resultat):''].filter(Boolean).join(' · ')}</span>
+          ${ex.notes?`<span class="hint" style="font-style:italic">${esc(ex.notes)}</span>`:''}
+        </div></div>`;}).join('')}</div>
+    </div>`:''}
 
     <div class="panel" style="margin-top:14px">
       <div class="eyebrow" style="margin-bottom:14px">Précision & justesse — carte des impacts</div>
@@ -1111,6 +1346,8 @@ function renderAnalyse(){
     <div class="subnote">Les diagnostics sont une aide à la lecture de tes données, pas un substitut à l'œil d'un entraîneur. Ils gagnent en fiabilité au fil des séances.</div>
   `;
 }
+function setAnalyseFilter(k,v){ if(!S.ui.analyseFilt) S.ui.analyseFilt={}; S.ui.analyseFilt[k]=v||undefined; S.ui.analyseId=null; saveState(); renderAnalyse(); }
+function resetAnalyseFilters(){ S.ui.analyseFilt={}; S.ui.analyseId=null; saveState(); renderAnalyse(); }
 function analyseTarget(se,d){
   const f=faceModel(se.blasonCm,se.scoring); const R=f.R, vb=R*1.06;
   let rings="";
