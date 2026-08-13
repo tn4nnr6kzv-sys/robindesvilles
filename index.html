@@ -350,7 +350,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
   </svg>
   <div class="flashG"></div>
   <div class="ititle">Sagitta</div>
-  <div class="iversion">v2.2.1 · GreenArrow</div>
+  <div class="iversion">v2.3.1 · GreenArrow</div>
   <div class="vignette"></div>
   <button class="skip" id="introSkip">Passer &#8614;</button>
 </div>
@@ -412,7 +412,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
 <script>
 "use strict";
 /* ============================================================
-   SAGITTA — v2.2.1 « GreenArrow »
+   SAGITTA — v2.3.1 « GreenArrow »
    Carnet de performance & coaching au tir à l'arc
    Fichier unique HTML/JS · persistance localStorage · export JSON/CSV
 
@@ -424,7 +424,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
          fréquent ; roule vers Y+1 quand Z dépasserait 12
    - CodeName = mémo de période de développement, ne change qu'avec X
    ============================================================ */
-const VERSION = "2.2.1";
+const VERSION = "2.3.1";
 const CODENAME = "GreenArrow";
 const LSKEY = "sagitta.v1";
 
@@ -535,21 +535,68 @@ function flecheLabel(se){
 }
 
 /* ---------- moteur de scoring / géométrie du blason ---------- */
-// scoring: "10z" (10..1) ou "6z" (10..5). Rayons en cm, PIM et coords en cm.
+/* ---------- catalogue de blasons ---------- */
+const BLASONS = [
+  {id:"a122",type:"Anglais",nom:"Blason anglais",taille:122,scoring:"10z",label:"Anglais 122 cm · 10 zones"},
+  {id:"a80",type:"Anglais",nom:"Blason anglais",taille:80,scoring:"10z",label:"Anglais 80 cm · 10 zones"},
+  {id:"a60",type:"Anglais",nom:"Blason anglais",taille:60,scoring:"10z",label:"Anglais 60 cm · 10 zones"},
+  {id:"a40",type:"Anglais",nom:"Blason anglais",taille:40,scoring:"10z",label:"Anglais 40 cm · 10 zones"},
+  {id:"a60p",type:"Anglais",nom:"Blason anglais",taille:60,scoring:"5z",label:"Anglais 60 cm · 5 zones (poulies)"},
+  {id:"a80p",type:"Anglais",nom:"Blason anglais",taille:80,scoring:"5z",label:"Anglais 80 cm · 5 zones (poulies)"},
+  {id:"t60",type:"Anglais",nom:"Trispot",taille:60,scoring:"5z",label:"Trispot 60 cm · 5 zones"},
+  {id:"t40",type:"Anglais",nom:"Trispot",taille:40,scoring:"5z",label:"Trispot 40 cm · 5 zones"},
+  {id:"f80",type:"Field",nom:"Blason campagne",taille:80,scoring:"field6",label:"Campagne 80 cm · 6 zones"},
+  {id:"f60",type:"Field",nom:"Blason campagne",taille:60,scoring:"field6",label:"Campagne 60 cm · 6 zones"},
+  {id:"f40",type:"Field",nom:"Blason campagne",taille:40,scoring:"field6",label:"Campagne 40 cm · 6 zones"},
+  {id:"f20",type:"Field",nom:"Blason campagne",taille:20,scoring:"field6",label:"Campagne 20 cm · 6 zones"},
+  {id:"beur",type:"Beursault",nom:"Beursault",taille:48,scoring:"beur3",label:"Beursault 48 cm · 3 zones"},
+  {id:"anim",type:"Animalier",nom:"Animal",taille:0,scoring:"animal",label:"Animal (zones marquées)"},
+  {id:"3d",type:"3D",nom:"Cible 3D",taille:0,scoring:"3d",label:"Cible 3D"},
+];
+
+// scoring: "10z" (10..1), "5z" (10..6), "field6" (6..1), "beur3" (3..1), "animal", "3d"
 function faceModel(blasonCm, scoring){
   const R = blasonCm/2;
-  const zones = scoring==="6z"?6:10;
+  let zones;
+  if(scoring==="5z") zones=5;
+  else if(scoring==="field6") zones=6;
+  else if(scoring==="beur3") zones=3;
+  else zones=10; // 10z default
   return { R, zones, ringW:R/zones, xRadius:R/(zones*2) };
 }
 function scoreFromRadius(rCm, blasonCm, scoring){
+  if(scoring==="animal"||scoring==="3d") return {v:0,isX:false}; // pas de scoring géométrique
   const f = faceModel(blasonCm,scoring);
   if(rCm>f.R) return {v:0,isX:false};
-  let k = Math.floor(rCm/f.ringW);      // 0..zones-1
+  let k = Math.floor(rCm/f.ringW);
   if(k>=f.zones) k=f.zones-1;
-  let v = 10-k;                          // 10z -> 10..1 ; 6z -> 10..5
+  let v;
+  if(scoring==="5z") v = 10-k;          // 10,9,8,7,6 (5 zones)
+  else if(scoring==="field6") v = 6-k;  // 6,5,4,3,2,1
+  else if(scoring==="beur3") v = 3-k;   // 3,2,1
+  else v = 10-k;                         // 10..1 (10 zones)
   const isX = rCm<=f.xRadius;
   return {v, isX};
 }
+function maxScoreForScoring(scoring){
+  if(scoring==="5z") return 10;
+  if(scoring==="field6") return 6;
+  if(scoring==="beur3") return 3;
+  if(scoring==="animal"||scoring==="3d") return 0;
+  return 10;
+}
+function minScoreForScoring(scoring){
+  if(scoring==="5z") return 6;
+  if(scoring==="field6") return 1;
+  if(scoring==="beur3") return 1;
+  return 1;
+}
+function blasonLabel(se){
+  const b=BLASONS.find(x=>x.id===se.blasonId);
+  if(b) return b.label;
+  return `Ø${se.blasonCm||'?'} cm`;
+}
+function isManualScoringOnly(scoring){ return scoring==="animal"||scoring==="3d"; }
 // couleur World Archery d'une zone (score v)
 function zoneColor(v){
   if(v>=9) return "var(--wa-gold)";
@@ -714,7 +761,7 @@ function renderSeances(){
         <div class="day"><div class="d">${dd.d}</div><div class="m">${dd.m}</div></div>
         <div class="meta">
           <div class="t">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div>
-          <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${done} flèches ${st.disp?"· 🎯 tracé":""}${(se.exercices||[]).length?` · 🏋 ${se.exercices.length} exo`:""}</div>
+          <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · ${blasonLabel(se)} · ${done} flèches ${st.disp?"· 🎯 tracé":""}${(se.exercices||[]).length?` · 🏋 ${se.exercices.length} exo`:""}</div>
         </div>
         <div class="sc"><div class="big">${st.total}</div><div class="avg">${round(st.avg,2)}/flèche</div></div>
       </button>`;
@@ -766,7 +813,9 @@ function newSeance(){
             : `<select id="ns-arc">${ARCS.map(a=>`<option ${a===S.profile.arc?'selected':''}>${a}</option>`).join("")}</select>
             <div class="subnote" style="margin-top:4px">Aucun arc enregistré — ajoute-en un dans l'onglet Archerie pour le retrouver ici.</div>`}
         </div>
-        <div class="field"><label>Blason Ø (cm)</label><input type="number" id="ns-blason" value="40" min="10" step="1"></div>
+        <div class="field"><label>Blason</label>
+          <select id="ns-blason">${BLASONS.map(b=>`<option value="${b.id}" ${b.id===(S.profile._lastBlasonId||'a40')?'selected':''}>${esc(b.label)}</option>`).join("")}</select>
+        </div>
       </div>
       ${S.materiel.fleches.length?`<div class="field">
           <label>Jeu de flèches utilisé</label>
@@ -776,7 +825,6 @@ function newSeance(){
           </select>
         </div>`:''}
       <div class="formgrid">
-        <div class="field"><label>Cotation</label><select id="ns-scoring"><option value="10z">10 zones (10→1)</option><option value="6z">6 zones poulies (10→5)</option></select></div>
         <div class="field"><label>Flèches / volée</label><input type="number" id="ns-fpv" value="6" min="1" max="12" step="1"></div>
         <div class="field"><label>Nb de volées prévues</label><input type="number" id="ns-nv" value="10" min="1" max="60" step="1"></div>
       </div>
@@ -796,6 +844,8 @@ function createSeance(){
   const savedArc = S.materiel.arcs.find(a=>a.id===arcVal);
   const flecheEl=$("#ns-fleche");
   const flecheId = flecheEl && flecheEl.value ? flecheEl.value : null;
+  const blasonSel=$("#ns-blason").value;
+  const blason=BLASONS.find(b=>b.id===blasonSel)||BLASONS[3]; // fallback a40
   const se={
     id:uid(),
     date:$("#ns-date").value||new Date().toISOString().slice(0,10),
@@ -804,15 +854,17 @@ function createSeance(){
     arcId: savedArc? savedArc.id : null,
     arcType: savedArc? savedArc.type : arcVal,
     flecheId,
-    blasonCm:parseInt($("#ns-blason").value)||40,
-    scoring:$("#ns-scoring").value,
+    blasonId:blason.id,
+    blasonCm:blason.taille||40,
+    scoring:blason.scoring,
     flechesParVolee:Math.max(1,parseInt($("#ns-fpv").value)||6),
     nbVolees:Math.max(1,parseInt($("#ns-nv").value)||10),
     note:$("#ns-note").value.trim(),
     clickerTime: $("#ns-clicker").value ? parseFloat($("#ns-clicker").value) : null,
-    volees:[]
+    volees:[], exercices:[]
   };
-  S.profile._lastDisc=disc; S.profile.arc=se.arcType; if(savedArc) S.profile._lastArcId=savedArc.id; if(flecheId) S.profile._lastFlecheId=flecheId;
+  S.profile._lastDisc=disc; S.profile.arc=se.arcType; S.profile._lastBlasonId=blason.id;
+  if(savedArc) S.profile._lastArcId=savedArc.id; if(flecheId) S.profile._lastFlecheId=flecheId;
   S.seances.push(se); S.ui.activeSeanceId=se.id; S.ui.inputMode="pointer"; resetZoomState();
   saveState(); closeModal(); setView("saisie");
 }
@@ -862,7 +914,7 @@ function renderSeanceResume(se,st){
         <div><span class="hint">Distance</span><br><b>${se.distance||'—'} m</b></div>
         <div><span class="hint">Arc</span><br><b>${esc(arcLabel(se))}</b></div>
         <div><span class="hint">Flèches</span><br><b>${flecheLabel(se)||'—'}</b></div>
-        <div><span class="hint">Blason</span><br><b>Ø ${se.blasonCm} cm</b></div>
+        <div><span class="hint">Blason</span><br><b>${blasonLabel(se)}</b></div>
       </div>
       ${se.note?`<div class="subnote" style="margin-top:14px;color:var(--ink)">"${esc(se.note)}"</div>`:''}
     </div>
@@ -882,14 +934,17 @@ function renderSeanceResume(se,st){
 /* --- Onglet 2 : Tirs comptés (la saisie existante) --- */
 function renderSeanceTirs(se,st){
   if(S.ui.inputMode==null) S.ui.inputMode="pointer";
-  const mode=S.ui.inputMode, fpv=se.flechesParVolee, done=se.volees.length;
+  const manual=isManualScoringOnly(se.scoring);
+  const mode=manual?'pad':S.ui.inputMode;
+  const fpv=se.flechesParVolee, done=se.volees.length;
   return `
     <div class="panel" style="padding:14px;margin-bottom:14px">
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
-        <div class="pills">
+        ${manual?`<div class="hint">Cible ${esc(blasonLabel(se))} — saisie par score uniquement</div>`:
+        `<div class="pills">
           <button class="pill ${mode==='pointer'?'on':''}" onclick="setMode('pointer')">🎯 Pointer sur cible</button>
           <button class="pill ${mode==='pad'?'on':''}" onclick="setMode('pad')">⌨︎ Saisie rapide</button>
-        </div>
+        </div>`}
         <div class="mono" style="color:var(--muted);font-size:13px">Total : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl · volée ${done+1}/${se.nbVolees}</div>
       </div>
     </div>
@@ -1037,9 +1092,16 @@ function voleeRowHTML(v,i){
 }
 function padHTML(se){
   const btns=[];
-  btns.push(`<button class="x" onclick="addArrowScore('X')">X</button>`);
-  const maxV=se.scoring==="6z"?10:10, minV=se.scoring==="6z"?5:1;
-  for(let v=10;v>=minV;v--) btns.push(`<button onclick="addArrowScore(${v})" style="color:${zoneColor(v)}">${v}</button>`);
+  const maxV=maxScoreForScoring(se.scoring), minV=minScoreForScoring(se.scoring);
+  if(isManualScoringOnly(se.scoring)){
+    // Animal / 3D : saisie libre avec un champ numérique
+    return `<div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Saisie libre — saisis le score de chaque flèche</div>
+      <div class="formgrid"><div class="field"><label>Score</label><input type="number" id="manual-score" min="0" step="1" placeholder="Points"></div>
+      <button class="btn primary" onclick="addArrowScore(parseInt($('#manual-score').value)||0);$('#manual-score').value=''">Ajouter</button></div>
+      <button class="btn sm" style="margin-top:8px" onclick="addArrowScore('M')">M (raté)</button>`;
+  }
+  if(maxV>=10) btns.push(`<button class="x" onclick="addArrowScore('X')">X</button>`);
+  for(let v=maxV;v>=minV;v--) btns.push(`<button onclick="addArrowScore(${v})" style="color:${zoneColor(v)}">${v}</button>`);
   btns.push(`<button class="miss" onclick="addArrowScore('M')">M</button>`);
   return `<div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Saisie rapide — appuie sur le score de chaque flèche</div><div class="pad">${btns.join("")}</div>`;
 }
@@ -1201,7 +1263,7 @@ function targetSVG(se){
     </div>
     <div class="tlegend">
       <span><i style="background:#F6D33C"></i>9-10</span><span><i style="background:#E23B2E"></i>7-8</span>
-      <span><i style="background:#2FA4DE"></i>5-6</span>${se.scoring!=='6z'?'<span><i style="background:#161616;border:1px solid #555"></i>3-4</span><span><i style="background:#EFEBDD"></i>1-2</span>':''}
+      <span><i style="background:#2FA4DE"></i>5-6</span>${(se.scoring==='10z'||!se.scoring)?'<span><i style="background:#161616;border:1px solid #555"></i>3-4</span><span><i style="background:#EFEBDD"></i>1-2</span>':''}
       ${useHex?'<span><i style="background:#D9C48F"></i>Hors blason</span>':''}
     </div>`;
 }
@@ -1292,7 +1354,7 @@ function renderAnalyse(){
   el.innerHTML=`
     <div class="section-head">
       <div><div class="eyebrow">Analyse de séance</div><h2>${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</h2>
-        <div class="hint">${fmtDate(se.date)} · ${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · Ø${se.blasonCm} cm · ${st.n} flèches${seExos.length?' · '+seExos.length+' exercice(s)':''}</div></div>
+        <div class="hint">${fmtDate(se.date)} · ${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · ${blasonLabel(se)} · ${st.n} flèches${seExos.length?' · '+seExos.length+' exercice(s)':''}</div></div>
       <div class="field" style="min-width:220px"><label>Séance analysée (${pool.length})</label><select onchange="openAnalyse(this.value)">${opts}</select></div>
     </div>
 
@@ -1398,19 +1460,23 @@ function analyseTarget(se,d){
   </div>`;
 }
 function zoneDistHTML(se,st){
-  const scoring=se.scoring; const minV=scoring==="6z"?5:0;
+  const scoring=se.scoring;
+  const maxS=maxScoreForScoring(scoring), minS=minScoreForScoring(scoring);
   const max=Math.max(1,...Object.values(st.dist));
   let rows="";
-  for(let v=10;v>=minV;v--){
-    if(scoring==="6z" && v<5) break;
+  for(let v=maxS;v>=minS;v--){
     const c=st.dist[v]||0; const pct=c/st.n*100;
-    const lbl=v===0?"M":v;
     rows+=`<div class="bar-row">
-      <div class="zl" style="color:${zoneColor(v)}">${lbl}</div>
+      <div class="zl" style="color:${zoneColor(v)}">${v}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${c/max*100}%;background:${zoneHex(v)}"></div></div>
       <div class="zc">${c} · ${round(pct)}%</div></div>`;
   }
-  if(scoring!=="6z"){ const c=st.dist[0]||0; }
+  // M (raté)
+  const cm=st.dist[0]||0; if(cm>0){
+    rows+=`<div class="bar-row"><div class="zl" style="color:#4a5a55">M</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${cm/max*100}%;background:#4a5a55"></div></div>
+      <div class="zc">${cm} · ${round(cm/st.n*100)}%</div></div>`;
+  }
   return rows;
 }
 function lineChartHTML(vals,opts={}){
