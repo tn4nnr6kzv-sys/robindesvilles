@@ -274,8 +274,16 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
   text-transform:uppercase;color:#EAFFEF;letter-spacing:.28em;opacity:0;
   text-shadow:0 0 18px rgba(90,255,160,.9),0 0 50px rgba(60,220,130,.6);
 }
+#intro .iversion{
+  position:absolute;top:calc(7% + clamp(38px,7vw,60px));left:0;right:0;text-align:center;pointer-events:none;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:clamp(10px,1.8vw,14px);
+  text-transform:uppercase;color:rgba(190,255,220,.75);letter-spacing:.22em;opacity:0;
+  text-shadow:0 0 10px rgba(90,255,160,.5);
+}
 #intro.play .ititle{animation:i-titleG 5.4s ease-out forwards}
+#intro.play .iversion{animation:i-verG 5.4s ease-out forwards}
 @keyframes i-titleG{0%{opacity:0;letter-spacing:.55em}12%{opacity:1;letter-spacing:.28em}86%{opacity:1}100%{opacity:1}}
+@keyframes i-verG{0%,16%{opacity:0}24%{opacity:.85}86%{opacity:.85}100%{opacity:.85}}
 #intro .skip{
   position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:5;
   background:rgba(6,26,14,.72);border:1px solid #3FCF7F;color:#CFFFE0;
@@ -342,6 +350,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
   </svg>
   <div class="flashG"></div>
   <div class="ititle">Sagitta</div>
+  <div class="iversion">v2.2.1 · GreenArrow</div>
   <div class="vignette"></div>
   <button class="skip" id="introSkip">Passer &#8614;</button>
 </div>
@@ -403,7 +412,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
 <script>
 "use strict";
 /* ============================================================
-   SAGITTA — v2.1.1 « GreenArrow »
+   SAGITTA — v2.2.1 « GreenArrow »
    Carnet de performance & coaching au tir à l'arc
    Fichier unique HTML/JS · persistance localStorage · export JSON/CSV
 
@@ -415,7 +424,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
          fréquent ; roule vers Y+1 quand Z dépasserait 12
    - CodeName = mémo de période de développement, ne change qu'avec X
    ============================================================ */
-const VERSION = "2.1.1";
+const VERSION = "2.2.1";
 const CODENAME = "GreenArrow";
 const LSKEY = "sagitta.v1";
 
@@ -1243,9 +1252,12 @@ function validateEnd(){
 }
 function finishSeance(){
   const se=S.seances.find(x=>x.id===S.ui.activeSeanceId);
-  CURRENT_END=[]; saveState();
-  if(se && flatArrows(se).length) openAnalyse(se.id);
-  else { toast("Séance vide supprimée"); if(se) S.seances=S.seances.filter(x=>x.id!==se.id); saveState(); setView("seances"); }
+  CURRENT_END=[];
+  if(se && !flatArrows(se).length && !(se.exercices||[]).length){
+    toast("Séance vide supprimée"); S.seances=S.seances.filter(x=>x.id!==se.id);
+  } else if(se){ toast("Séance terminée"); }
+  S.ui.activeSeanceId=null; S.ui.seanceTab="resume";
+  saveState(); setView("saisie");
 }
 
 /* ---------- VUE ANALYSE ---------- */
@@ -2064,19 +2076,69 @@ function confirmDeleteViseur(id){
 /* ---------- PROFIL / DONNÉES ---------- */
 function openSettings(){
   const p=S.profile;
-  modal(`<h3>Profil archer</h3>
-    <div class="field"><label>Nom</label><input id="pf-nom" value="${esc(p.nom)}"></div>
+  const totalArrows=S.seances.reduce((s,se)=>s+flatArrows(se).length,0);
+  const totalSeances=S.seances.length;
+  const avgs=S.seances.map(se=>seanceStats(se).avg).filter(x=>x>0);
+  const globalAvg=avgs.length?avgs.reduce((a,b)=>a+b,0)/avgs.length:0;
+  const bestAvg=avgs.length?Math.max(...avgs):0;
+  const arcOptions=S.materiel.arcs.length
+    ? S.materiel.arcs.map(a=>`<option value="${a.id}" ${p.arcPrincipalId===a.id?'selected':''}>${esc(a.nom)} (${esc(a.type)})</option>`).join("")
+    : ARCS.map(a=>`<option ${a===p.arc?'selected':''}>${a}</option>`).join("");
+  modal(`
+    <h3>Profil archer</h3>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+      <div id="licence-photo-preview" style="width:80px;height:80px;border-radius:14px;overflow:hidden;background:var(--panel2);flex:0 0 auto;display:flex;align-items:center;justify-content:center">
+        ${p.licencePhoto?`<img src="${p.licencePhoto}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:28px;color:var(--muted)">📷</span>'}
+      </div>
+      <div>
+        <label class="btn sm" style="cursor:pointer">Photo de licence<input type="file" accept="image/*" style="display:none" onchange="handleLicencePhoto(event)"></label>
+        <div class="hint" style="margin-top:4px">Visible uniquement dans ton profil.</div>
+      </div>
+    </div>
+    <div class="formgrid">
+      <div class="field"><label>Prénom</label><input id="pf-prenom" value="${esc(p.prenom||'')}"></div>
+      <div class="field"><label>Nom</label><input id="pf-nom" value="${esc(p.nom||'')}"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Surnom</label><input id="pf-surnom" value="${esc(p.surnom||'')}" placeholder="Optionnel — affiché à la place du prénom si renseigné"></div>
     <div class="formgrid" style="margin-top:12px">
-      <div class="field"><label>Arc principal</label><select id="pf-arc">${ARCS.map(a=>`<option ${a===p.arc?'selected':''}>${a}</option>`).join("")}</select></div>
+      <div class="field"><label>Arc principal</label><select id="pf-arc">${arcOptions}</select>
+        ${!S.materiel.arcs.length?'<div class="subnote" style="margin-top:4px">Ajoute tes arcs dans l\'onglet Archerie pour les retrouver ici.</div>':''}
+      </div>
       <div class="field"><label>Latéralité</label><select id="pf-main"><option ${p.main==='Droitier'?'selected':''}>Droitier</option><option ${p.main==='Gaucher'?'selected':''}>Gaucher</option></select></div>
     </div>
+    ${totalSeances?`<div class="divider"></div>
+    <div class="metrics">
+      <div class="metric"><div class="lab">Séances</div><div class="val">${totalSeances}</div></div>
+      <div class="metric"><div class="lab">Flèches tirées</div><div class="val">${totalArrows}</div></div>
+      <div class="metric accent"><div class="lab">Moyenne globale</div><div class="val">${round(globalAvg,2)}</div></div>
+      <div class="metric"><div class="lab">Record moyenne</div><div class="val">${round(bestAvg,2)}</div></div>
+    </div>`:''}
     <div class="btnrow" style="margin-top:18px;justify-content:flex-end">
       <button class="btn ghost" onclick="closeModal()">Fermer</button>
       <button class="btn primary" onclick="saveProfile()">Enregistrer</button></div>
     <div class="divider"></div>
     <div class="hint">Sagitta v${VERSION} « ${CODENAME} » — carnet autonome, tes données restent sur ton appareil.</div>`);
 }
-function saveProfile(){ S.profile.nom=$("#pf-nom").value.trim()||"Archer"; S.profile.arc=$("#pf-arc").value; S.profile.main=$("#pf-main").value; saveState(); closeModal(); toast("Profil enregistré"); }
+let LICENCE_PHOTO_PENDING=null;
+function handleLicencePhoto(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  resizeImageToDataURL(file,320,url=>{
+    LICENCE_PHOTO_PENDING=url;
+    const prev=$("#licence-photo-preview"); if(prev) prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  });
+}
+function saveProfile(){
+  S.profile.prenom=($("#pf-prenom").value||'').trim();
+  S.profile.nom=($("#pf-nom").value||'').trim();
+  S.profile.surnom=($("#pf-surnom").value||'').trim();
+  const arcVal=$("#pf-arc").value;
+  const savedArc=S.materiel.arcs.find(a=>a.id===arcVal);
+  if(savedArc){ S.profile.arcPrincipalId=savedArc.id; S.profile.arc=savedArc.type; }
+  else { S.profile.arcPrincipalId=null; S.profile.arc=arcVal; }
+  S.profile.main=$("#pf-main").value;
+  if(LICENCE_PHOTO_PENDING){ S.profile.licencePhoto=LICENCE_PHOTO_PENDING; LICENCE_PHOTO_PENDING=null; }
+  saveState(); closeModal(); toast("Profil enregistré");
+}
 
 function openData(){
   modal(`<h3>Données & sauvegarde</h3>
