@@ -350,7 +350,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
   </svg>
   <div class="flashG"></div>
   <div class="ititle">Sagitta</div>
-  <div class="iversion">v2.3.1 · GreenArrow</div>
+  <div class="iversion">v2.3.2 · GreenArrow</div>
   <div class="vignette"></div>
   <button class="skip" id="introSkip">Passer &#8614;</button>
 </div>
@@ -412,7 +412,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
 <script>
 "use strict";
 /* ============================================================
-   SAGITTA — v2.3.1 « GreenArrow »
+   SAGITTA — v2.3.2 « GreenArrow »
    Carnet de performance & coaching au tir à l'arc
    Fichier unique HTML/JS · persistance localStorage · export JSON/CSV
 
@@ -424,7 +424,7 @@ a.link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(242,1
          fréquent ; roule vers Y+1 quand Z dépasserait 12
    - CodeName = mémo de période de développement, ne change qu'avec X
    ============================================================ */
-const VERSION = "2.3.1";
+const VERSION = "2.3.2";
 const CODENAME = "GreenArrow";
 const LSKEY = "sagitta.v1";
 
@@ -552,9 +552,10 @@ const BLASONS = [
   {id:"beur",type:"Beursault",nom:"Beursault",taille:48,scoring:"beur3",label:"Beursault 48 cm · 3 zones"},
   {id:"anim",type:"Animalier",nom:"Animal",taille:0,scoring:"animal",label:"Animal (zones marquées)"},
   {id:"3d",type:"3D",nom:"Cible 3D",taille:0,scoring:"3d",label:"Cible 3D"},
+  {id:"postit",type:"Entraînement",nom:"Post-it",taille:8,scoring:"postit",label:"Post-it (sans blason)"},
 ];
 
-// scoring: "10z" (10..1), "5z" (10..6), "field6" (6..1), "beur3" (3..1), "animal", "3d"
+// scoring: "10z" (10..1), "5z" (10..6), "field6" (6..1), "beur3" (3..1), "animal", "3d", "postit"
 function faceModel(blasonCm, scoring){
   const R = blasonCm/2;
   let zones;
@@ -565,7 +566,7 @@ function faceModel(blasonCm, scoring){
   return { R, zones, ringW:R/zones, xRadius:R/(zones*2) };
 }
 function scoreFromRadius(rCm, blasonCm, scoring){
-  if(scoring==="animal"||scoring==="3d") return {v:0,isX:false}; // pas de scoring géométrique
+  if(scoring==="animal"||scoring==="3d"||scoring==="postit") return {v:0,isX:false}; // pas de scoring géométrique
   const f = faceModel(blasonCm,scoring);
   if(rCm>f.R) return {v:0,isX:false};
   let k = Math.floor(rCm/f.ringW);
@@ -582,7 +583,7 @@ function maxScoreForScoring(scoring){
   if(scoring==="5z") return 10;
   if(scoring==="field6") return 6;
   if(scoring==="beur3") return 3;
-  if(scoring==="animal"||scoring==="3d") return 0;
+  if(scoring==="animal"||scoring==="3d"||scoring==="postit") return 0;
   return 10;
 }
 function minScoreForScoring(scoring){
@@ -596,7 +597,7 @@ function blasonLabel(se){
   if(b) return b.label;
   return `Ø${se.blasonCm||'?'} cm`;
 }
-function isManualScoringOnly(scoring){ return scoring==="animal"||scoring==="3d"; }
+function isManualScoringOnly(scoring){ return scoring==="animal"||scoring==="3d"||scoring==="postit"; }
 // couleur World Archery d'une zone (score v)
 function zoneColor(v){
   if(v>=9) return "var(--wa-gold)";
@@ -763,7 +764,7 @@ function renderSeances(){
           <div class="t">${esc(se.discipline)}${se.distance?` · ${se.distance} m`:""}</div>
           <div class="s">${esc(arcLabel(se))}${flecheLabel(se)?` · ${esc(flecheLabel(se))}`:''} · ${blasonLabel(se)} · ${done} flèches ${st.disp?"· 🎯 tracé":""}${(se.exercices||[]).length?` · 🏋 ${se.exercices.length} exo`:""}</div>
         </div>
-        <div class="sc"><div class="big">${st.total}</div><div class="avg">${round(st.avg,2)}/flèche</div></div>
+        <div class="sc"><div class="big">${se.scoring==='postit'?`${st.total}/${st.n}`:st.total}</div><div class="avg">${se.scoring==='postit'?`${st.n?round(st.total/st.n*100,0):0}%`:`${round(st.avg,2)}/flèche`}</div></div>
       </button>`;
     }).join("")+`</div>`;
   }
@@ -920,8 +921,11 @@ function renderSeanceResume(se,st){
     </div>
     <div class="metrics" style="margin-top:14px">
       <div class="metric"><div class="lab">Volées comptées</div><div class="val">${done}<small>/${se.nbVolees}</small></div></div>
-      <div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
-      <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>
+      ${se.scoring==='postit'?
+        `<div class="metric accent"><div class="lab">Touchés</div><div class="val">${st.total}<small>/${st.n}</small></div></div>
+         <div class="metric"><div class="lab">Taux</div><div class="val">${st.n?round(st.total/st.n*100,0):0}%</div></div>`:
+        `<div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+         <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>`}
       <div class="metric"><div class="lab">Exercices réalisés</div><div class="val">${exDone}</div></div>
     </div>
     <div class="btnrow" style="margin-top:16px">
@@ -940,12 +944,15 @@ function renderSeanceTirs(se,st){
   return `
     <div class="panel" style="padding:14px;margin-bottom:14px">
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
-        ${manual?`<div class="hint">Cible ${esc(blasonLabel(se))} — saisie par score uniquement</div>`:
+        ${se.scoring==='postit'?`<div class="hint">🟦 Post-it — tir sans blason</div>`:
+        manual?`<div class="hint">Cible ${esc(blasonLabel(se))} — saisie par score uniquement</div>`:
         `<div class="pills">
           <button class="pill ${mode==='pointer'?'on':''}" onclick="setMode('pointer')">🎯 Pointer sur cible</button>
           <button class="pill ${mode==='pad'?'on':''}" onclick="setMode('pad')">⌨︎ Saisie rapide</button>
         </div>`}
-        <div class="mono" style="color:var(--muted);font-size:13px">Total : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl · volée ${done+1}/${se.nbVolees}</div>
+        <div class="mono" style="color:var(--muted);font-size:13px">${se.scoring==='postit'?
+          `Touchés : <b style="color:var(--gold)">${st.total}</b>/${st.n} · ${st.n?round(st.total/st.n*100,0):'0'}% · volée ${done+1}/${se.nbVolees}`:
+          `Total : <b style="color:var(--gold)">${st.total}</b> · ${round(st.avg,2)}/fl · volée ${done+1}/${se.nbVolees}`}</div>
       </div>
     </div>
     <div class="saisie-layout">
@@ -962,12 +969,17 @@ function renderSeanceTirs(se,st){
       </div>
       <div class="panel">
         <div class="eyebrow" style="margin-bottom:10px">Volées enregistrées</div>
-        ${done? se.volees.map((v,i)=>voleeRowHTML(v,i)).join("") : '<div class="hint">Aucune volée validée.</div>'}
+        ${done? se.volees.map((v,i)=>voleeRowHTML(v,i,se.scoring)).join("") : '<div class="hint">Aucune volée validée.</div>'}
         ${done?`<div class="divider"></div>
-          <div style="display:flex;justify-content:space-between" class="mono">
+          ${se.scoring==='postit'?
+          `<div style="display:flex;justify-content:space-between" class="mono">
+            <span style="color:var(--muted)">Touchés / volée</span><b>${round(st.total/(se.volees.length||1),1)}</b></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px" class="mono">
+            <span style="color:var(--muted)">Taux de touche</span><b>${st.n?round(st.total/st.n*100,0):0} %</b></div>`:
+          `<div style="display:flex;justify-content:space-between" class="mono">
             <span style="color:var(--muted)">Moyenne / volée</span><b>${round(st.total/(se.volees.length||1),1)}</b></div>
           <div style="display:flex;justify-content:space-between;margin-top:4px" class="mono">
-            <span style="color:var(--muted)">Taux de X</span><b>${round(st.xRate)} %</b></div>`:''}
+            <span style="color:var(--muted)">Taux de X</span><b>${round(st.xRate)} %</b></div>`}`:''}
       </div>
     </div>
     <div class="subnote">En mode « Pointer », place chaque impact sur le blason — Sagitta déduit le score et débloque l'analyse de groupement.</div>`;
@@ -1050,9 +1062,12 @@ function renderSeanceBilan(se,st){
   const exSummary=exDone.length? exDone.map(ex=>{const r=EXERCICES.find(e=>e.id===ex.exerciceId); return r?esc(r.nom):'?';}).join(', ') : 'Aucun';
   return `
     <div class="metrics">
-      <div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
-      <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>
-      <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div></div>
+      ${se.scoring==='postit'?
+        `<div class="metric accent"><div class="lab">Touchés</div><div class="val">${st.total}<small>/${st.n}</small></div></div>
+         <div class="metric"><div class="lab">Taux de touche</div><div class="val">${st.n?round(st.total/st.n*100,0):0}<small>%</small></div></div>`:
+        `<div class="metric accent"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+         <div class="metric"><div class="lab">Moyenne / fl</div><div class="val">${round(st.avg,2)}</div></div>
+         <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div></div>`}
       <div class="metric"><div class="lab">Flèches tirées</div><div class="val">${st.n}</div></div>
     </div>
     ${st.disp?`<div class="metrics" style="margin-top:12px">
@@ -1075,24 +1090,63 @@ function renderSeanceBilan(se,st){
     </div>`;
 }
 function setMode(m){ S.ui.inputMode=m; saveState(); renderSaisie(); }
+function arrowLbl(f,scoring){
+  if(f.isX) return "X";
+  if(f.v===0) return "M";
+  if(scoring==="postit") return "✓";
+  return f.v;
+}
+function arrowColor(f,scoring){
+  if(scoring==="postit"&&f.v>0) return "#2dcc70";
+  return zoneColor(f.v);
+}
 function endStripHTML(fpv){
+  const scoring=S.seanceActive?S.seanceActive.scoring:'';
   let h="";
   for(let i=0;i<fpv;i++){
     const f=CURRENT_END[i];
-    if(f){ const lbl=f.isX?"X":(f.v===0?"M":f.v);
-      h+=`<span class="arrowchip filled" style="color:${zoneColor(f.v)};border-color:${zoneColor(f.v)}">${lbl}</span>`;
+    if(f){ const lbl=arrowLbl(f,scoring); const c=arrowColor(f,scoring);
+      h+=`<span class="arrowchip filled" style="color:${c};border-color:${c}">${lbl}</span>`;
     } else h+=`<span class="arrowchip">·</span>`;
   }
   return h;
 }
-function voleeRowHTML(v,i){
+function voleeRowHTML(v,i,scoring){
   const tot=v.fleches.reduce((s,f)=>s+(f.v||0),0);
-  const chips=v.fleches.map(f=>{const l=f.isX?"X":(f.v===0?"M":f.v);return `<span class="mini-arrow" style="color:${zoneColor(f.v)}">${l}</span>`;}).join("");
-  return `<div class="volee-row"><span class="n">${i+1}</span><div class="arrows">${chips}</div><span class="tot">${tot}</span></div>`;
+  const chips=v.fleches.map(f=>{const l=arrowLbl(f,scoring); const c=arrowColor(f,scoring); return `<span class="mini-arrow" style="color:${c}">${l}</span>`;}).join("");
+  const totLabel=scoring==='postit'?`${tot}/${v.fleches.length}`:tot;
+  return `<div class="volee-row"><span class="n">${i+1}</span><div class="arrows">${chips}</div><span class="tot">${totLabel}</span></div>`;
+}
+function postitTargetSVG(){
+  // Dessin stylisé d'un post-it bleu clair avec punaise — fidèle à la photo
+  return `<svg viewBox="0 0 200 200" style="max-width:180px;filter:drop-shadow(2px 4px 6px rgba(0,0,0,.25))">
+    <!-- fond paille/butte -->
+    <rect x="0" y="0" width="200" height="200" rx="6" fill="#C2A86A" opacity=".35"/>
+    <!-- post-it -->
+    <rect x="50" y="40" width="100" height="100" rx="2" fill="#A8D8EA" stroke="#7EC8E3" stroke-width="1"/>
+    <path d="M140 140 L150 130 Q152 140 140 140Z" fill="#8BC4D9"/>
+    <!-- punaise -->
+    <ellipse cx="100" cy="48" rx="8" ry="5" fill="#ccc" stroke="#999" stroke-width=".7"/>
+    <circle cx="100" cy="46" r="4.5" fill="#e0e0e0" stroke="#aaa" stroke-width=".5"/>
+    <circle cx="99" cy="45" r="1.5" fill="#fff" opacity=".6"/>
+    <!-- trait de crayon (cercle de visée) -->
+    <circle cx="100" cy="90" r="6" fill="none" stroke="#333" stroke-width="1.2" stroke-dasharray="2 1.5" opacity=".5"/>
+    <line x1="97" y1="90" x2="103" y2="90" stroke="#333" stroke-width=".8" opacity=".5"/>
+    <line x1="100" y1="87" x2="100" y2="93" stroke="#333" stroke-width=".8" opacity=".5"/>
+  </svg>`;
 }
 function padHTML(se){
   const btns=[];
   const maxV=maxScoreForScoring(se.scoring), minV=minScoreForScoring(se.scoring);
+  if(se.scoring==="postit"){
+    // Post-it : scoring binaire touché/raté
+    return `<div style="text-align:center;margin-bottom:16px">${postitTargetSVG()}</div>
+      <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Tir sur post-it — touché ou raté</div>
+      <div class="pad" style="max-width:260px;margin:0 auto">
+        <button style="background:var(--accent);color:#000;font-weight:700;font-size:18px;padding:14px 0" onclick="addArrowScore(1)">✓ Touché</button>
+        <button class="miss" style="font-size:18px;padding:14px 0" onclick="addArrowScore('M')">✗ Raté</button>
+      </div>`;
+  }
   if(isManualScoringOnly(se.scoring)){
     // Animal / 3D : saisie libre avec un champ numérique
     return `<div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:12px">Saisie libre — saisis le score de chaque flèche</div>
@@ -1343,8 +1397,7 @@ function renderAnalyse(){
   const exoNames=seExos.map(ex=>{const r=EXERCICES.find(e=>e.id===ex.exerciceId);return r?esc(r.nom):'?';});
 
   // sélecteur de séance (filtré)
-  const opts=pool.map(s=>`<option value="${s.id}" ${s.id===se.id?'selected':''}>${fmtDate(s.date)} · ${esc(s.discipline)} · ${seanceStats(s).total} pts${(s.exercices||[]).length?' · 🏋':''}
-</option>`).join("");
+  const opts=pool.map(s=>{const _st=seanceStats(s); const _lbl=s.scoring==='postit'?`${_st.total}/${_st.n} touchés`:`${_st.total} pts`; return `<option value="${s.id}" ${s.id===se.id?'selected':''}>${fmtDate(s.date)} · ${esc(s.discipline)} · ${_lbl}${(s.exercices||[]).length?' · 🏋':''}</option>`;}).join("");
 
   // exercices uniques pour le filtre
   const allExIds=[...new Set(S.seances.flatMap(s=>(s.exercices||[]).map(e=>e.exerciceId)))];
@@ -1371,12 +1424,15 @@ function renderAnalyse(){
     </div>
 
     <div class="metrics">
-      <div class="metric accent"><div class="lab">Moyenne / flèche</div><div class="val">${round(st.avg,2)}</div></div>
-      <div class="metric"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
-      <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div><div class="delta flat">${st.xs} X sur ${st.n} flèches</div></div>
-      ${st.disp && st.disp.angMrad!=null?
-        `<div class="metric"><div class="lab">Groupement normalisé</div><div class="val">${round(st.disp.angMrad,1)}<small>mrad</small></div><div class="delta flat">rating ≈ ${round(st.disp.ratingH,0)}</div></div>`
-        : `<div class="metric"><div class="lab">Taux de 10 · X</div><div class="val">${round(st.tenRate)}<small>%</small></div><div class="delta flat">${st.tens} dix · ${st.xs} X</div></div>`}
+      ${se.scoring==='postit'?
+        `<div class="metric accent"><div class="lab">Touchés</div><div class="val">${st.total}<small>/${st.n}</small></div></div>
+         <div class="metric"><div class="lab">Taux de touche</div><div class="val">${st.n?round(st.total/st.n*100,0):0}<small>%</small></div></div>`:
+        `<div class="metric accent"><div class="lab">Moyenne / flèche</div><div class="val">${round(st.avg,2)}</div></div>
+         <div class="metric"><div class="lab">Score total</div><div class="val">${st.total}</div></div>
+         <div class="metric"><div class="lab">Taux de X</div><div class="val">${round(st.xRate)}<small>%</small></div><div class="delta flat">${st.xs} X sur ${st.n} flèches</div></div>
+         ${st.disp && st.disp.angMrad!=null?
+           `<div class="metric"><div class="lab">Groupement normalisé</div><div class="val">${round(st.disp.angMrad,1)}<small>mrad</small></div><div class="delta flat">rating ≈ ${round(st.disp.ratingH,0)}</div></div>`
+           : `<div class="metric"><div class="lab">Taux de 10 · X</div><div class="val">${round(st.tenRate)}<small>%</small></div><div class="delta flat">${st.tens} dix · ${st.xs} X</div></div>`}`}
       ${se.clickerTime?`<div class="metric"><div class="lab">Maintien post-clicker</div><div class="val">${se.clickerTime}<small>s</small></div></div>`:''}
     </div>
 
@@ -1391,20 +1447,20 @@ function renderAnalyse(){
         </div></div>`;}).join('')}</div>
     </div>`:''}
 
-    <div class="panel" style="margin-top:14px">
+    ${se.scoring!=='postit'?`<div class="panel" style="margin-top:14px">
       <div class="eyebrow" style="margin-bottom:14px">Précision & justesse — carte des impacts</div>
       ${st.disp? analyseTarget(se,st.disp) : `<div class="hint">Cette séance a été saisie en mode rapide (sans position d'impact). Passe en mode « Pointer sur cible » à la saisie pour débloquer le groupement, le centrage (PIM), le cercle de dispersion et le <b>score potentiel</b>.</div>`}
-    </div>
+    </div>`:''}
 
     <div class="grid" style="grid-template-columns:1fr;margin-top:14px">
-      <div class="panel">
+      ${se.scoring!=='postit'?`<div class="panel">
         <div class="eyebrow" style="margin-bottom:14px">Répartition par zone</div>
         ${zoneDistHTML(se,st)}
-      </div>
+      </div>`:''}
       <div class="panel">
         <div class="eyebrow" style="margin-bottom:6px">Tendance intra-séance — total par volée</div>
         <div class="hint" style="margin-bottom:12px">Repère la fatigue (baisse en fin) ou l'échauffement (montée au début).</div>
-        ${lineChartHTML(st.ets, {ylabel:"pts/volée"})}
+        ${lineChartHTML(st.ets, {ylabel:se.scoring==='postit'?"touchés/volée":"pts/volée"})}
       </div>
     </div>
 
